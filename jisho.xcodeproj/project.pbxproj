@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C34A22D02E896BF700CB9A2F /* TikimUI in Frameworks */ = {isa = PBXBuildFile; productRef = C34A22CF2E896BF700CB9A2F /* TikimUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		C34A22BD2E8967F700CB9A2F /* jisho.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = jisho.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C34A22D02E896BF700CB9A2F /* TikimUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = jisho;
 			packageProductDependencies = (
+				C34A22CF2E896BF700CB9A2F /* TikimUI */,
 			);
 			productName = jisho;
 			productReference = C34A22BD2E8967F700CB9A2F /* jisho.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = C34A22B42E8967F700CB9A2F;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C34A22CE2E896BF700CB9A2F /* XCLocalSwiftPackageReference "../TikimUI" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C34A22BE2E8967F700CB9A2F /* Products */;
 			projectDirPath = "";
@@ -336,6 +345,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		C34A22CE2E896BF700CB9A2F /* XCLocalSwiftPackageReference "../TikimUI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../TikimUI;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C34A22CF2E896BF700CB9A2F /* TikimUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TikimUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C34A22B52E8967F700CB9A2F /* Project object */;
 }
