@@ -36,7 +36,7 @@ struct SettingsTabView: View {
                             showingAbout = true
                         }) {
                             HStack {
-                                Text("About QR Studio")
+                                Text("About KeyStaff")
                                     .foregroundColor(Color.appText)
                                 Spacer()
                                 Image(systemName: "chevron.right")
@@ -54,9 +54,9 @@ struct SettingsTabView: View {
                                 .foregroundColor(Color.appSubtitle)
                         }
 
-                        Link(destination: URL(string: "https://github.com/dunkbing/QRCode")!) {
+                        Link(destination: URL(string: "https://db99.dev")!) {
                             HStack {
-                                Text("QR Code Library")
+                                Text("Follow developer")
                                     .foregroundColor(Color.appAccent)
                                 Spacer()
                                 Image(systemName: "arrow.up.right.square")
@@ -175,12 +175,12 @@ struct AboutView: View {
         ScrollView {
             VStack(spacing: 24) {
                 // App Logo
-                Image(systemName: "qrcode")
+                Image(systemName: "pianokeys")
                     .font(.system(size: 80))
                     .foregroundColor(Color.appAccent)
                     .padding(.top, 40)
 
-                Text("QR Studio")
+                Text("KeyStaff")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(Color.appText)
@@ -193,35 +193,38 @@ struct AboutView: View {
 
                 VStack(alignment: .leading, spacing: 20) {
                     Text(
-                        "QR Studio is a powerful QR code generator that lets you create, customize, and save QR codes for various purposes."
+                        "KeyStaff blends piano practice with note reading drills. Switch between clefs, answer from a piano keyboard, and keep tempo with the integrated metronome."
                     )
                     .foregroundColor(Color.appText)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
 
-                    Text("Features:")
+                    Text("Highlights")
                         .font(.headline)
                         .foregroundColor(Color.appText)
                         .padding(.horizontal)
 
                     FeatureRow(
-                        icon: "link",
-                        text: "Generate QR codes for links, text, contact details, and more")
+                        icon: "music.note.list",
+                        text: "Practice treble, bass, and alto clefs with instant feedback")
                     FeatureRow(
-                        icon: "paintbrush", text: "Customize colors and styles of your QR codes"
-                    )
+                        icon: "pianokeys",
+                        text: "Answer using on-screen piano keys or letter notes with accidentals")
                     FeatureRow(
-                        icon: "square.and.arrow.down",
-                        text: "Export QR codes in multiple formats")
+                        icon: "metronome.fill",
+                        text: "Use the metronome with accents, time signatures, and visual beats")
                     FeatureRow(
-                        icon: "folder", text: "Save and organize your frequently used QR codes")
-                    FeatureRow(icon: "paintpalette", text: "Beautiful Catppuccin color themes")
+                        icon: "chart.line.uptrend.xyaxis",
+                        text: "Review session summaries with score history and accuracy charts")
+                    FeatureRow(
+                        icon: "paintpalette",
+                        text: "Enjoy Catppuccin-inspired themes and customizable settings")
                 }
                 .padding()
 
                 Spacer()
 
-                Text("Made with ❤️ using Swift and SwiftUI")
+                Text("Crafted with ❤️ in SwiftUI")
                     .foregroundColor(Color.appSubtitle)
                     .padding(.bottom, 40)
 
