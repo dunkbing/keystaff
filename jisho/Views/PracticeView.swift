@@ -150,6 +150,9 @@ struct PracticeView: View {
                     },
                     onClearHistory: {
                         gameManager.clearHistory()
+                    },
+                    onShowOptions: {
+                        showOptions = true
                     }
                 )
                 .transition(.opacity)
@@ -206,6 +209,8 @@ struct FeedbackOverlay: View {
 struct MenuView: View {
     @Environment(\.presentationMode) var presentationMode
     @Binding var showOptions: Bool
+    @ObservedObject private var store = PracticeResultStore.shared
+    @State private var showHistory = false
     let onStartGame: () -> Void
 
     var body: some View {
@@ -226,24 +231,6 @@ struct MenuView: View {
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color(red: 0.91, green: 0.55, blue: 0.56))
-                    )
-                }
-
-                Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                    showOptions = true
-                }) {
-                    HStack {
-                        Image(systemName: "gear")
-                        Text("Options")
-                    }
-                    .font(.headline)
-                    .foregroundColor(Color.appText)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.appMantle)
                     )
                 }
 
@@ -270,12 +257,28 @@ struct MenuView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showHistory = true
+                    } label: {
+                        Image(systemName: "clock.arrow.circlepath")
+                    }
+                    .foregroundColor(store.results.isEmpty ? Color.appMantle : Color.appAccent)
+                    .disabled(store.results.isEmpty)
+                }
+
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("Close") {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .foregroundColor(Color.appAccent)
                 }
             }
+        }
+        .sheet(isPresented: $showHistory) {
+            SessionHistoryView(
+                results: store.results,
+                onClose: { showHistory = false }
+            )
         }
     }
 }
@@ -290,6 +293,7 @@ struct SessionSummaryOverlay: View {
     let history: [SessionResult]
     let onRestart: () -> Void
     let onClearHistory: () -> Void
+    let onShowOptions: () -> Void
 
     private var recentHistory: [SessionResult] { history }
     private var displayedResult: SessionResult? { result ?? history.last }
@@ -357,6 +361,19 @@ struct SessionSummaryOverlay: View {
                         .background(
                             RoundedRectangle(cornerRadius: 16)
                                 .fill(Color(red: 0.91, green: 0.55, blue: 0.56))
+                        )
+                }
+
+                Button(action: onShowOptions) {
+                    Text("Options")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color.appAccent)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 10)
+                        .background(
+                            Capsule()
+                                .fill(Color.appMantle.opacity(0.6))
                         )
                 }
 
