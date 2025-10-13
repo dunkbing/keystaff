@@ -133,19 +133,32 @@ struct LedgerLinesView: View {
 
     var body: some View {
         ZStack {
-            // Draw a single ledger line through the note if it's on a ledger line
-            // Ledger lines are only drawn if the note position is even (on a line, not in a space)
-            // and is outside the staff (position > 4 or position < -4)
-
-            if abs(position) > 4 && position % 2 == 0 {
-                Path { path in
-                    // Draw horizontal line through the note (y=0 since we're offset with the note)
-                    path.move(to: CGPoint(x: -ledgerLineWidth / 2, y: 0))
-                    path.addLine(to: CGPoint(x: ledgerLineWidth / 2, y: 0))
-                }
-                .stroke(Color.appText, lineWidth: 2)
+            ForEach(ledgerLinePositions, id: \.self) { ledgerPosition in
+                Rectangle()
+                    .fill(Color.appText)
+                    .frame(width: ledgerLineWidth, height: 2)
+                    .offset(y: yOffset(for: ledgerPosition))
             }
         }
+    }
+
+    private var ledgerLinePositions: [Int] {
+        guard abs(position) > 4 else { return [] }
+
+        if position > 4 {
+            let highestEven = position % 2 == 0 ? position : position - 1
+            guard highestEven >= 6 else { return [] }
+            return Array(stride(from: 6, through: highestEven, by: 2))
+        } else {
+            let lowestEven = position % 2 == 0 ? position : position + 1
+            guard lowestEven <= -6 else { return [] }
+            return Array(stride(from: -6, through: lowestEven, by: -2))
+        }
+    }
+
+    private func yOffset(for ledgerPosition: Int) -> CGFloat {
+        // Negative values move lines upward (toward the staff), positive downward
+        CGFloat(position - ledgerPosition) * lineSpacing / 2
     }
 }
 
