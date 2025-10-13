@@ -19,6 +19,9 @@ class MetronomeManager: ObservableObject {
     private var timer: DispatchSourceTimer?
     private let audioManager = AudioManager.shared
     private var beatIndex: Int = 0
+    private var resumeWorkItem: DispatchWorkItem?
+    private var wasPlayingBeforeAdjustment = false
+    private let autoResumeDelay: TimeInterval = 0.7
 
     var bpm: String {
         String(format: "%.0f", tempo)
@@ -28,22 +31,25 @@ class MetronomeManager: ObservableObject {
         if isPlaying {
             stop()
         } else {
+            cancelAutoResume(resetFlag: true)
             start()
         }
     }
 
     func start() {
-        stop()
+        resetTimerState()
+        audioManager.stopMetronome()
         isPlaying = true
         beatIndex = timeSignature.beatsPerMeasure - 1
         currentBeat = 0
         scheduleTimer(fireImmediately: true)
+        wasPlayingBeforeAdjustment = false
     }
 
     func stop() {
+        cancelAutoResume(resetFlag: true)
         isPlaying = false
-        timer?.cancel()
-        timer = nil
+        resetTimerState()
         beatIndex = 0
         currentBeat = 0
         audioManager.stopMetronome()
@@ -71,11 +77,91 @@ class MetronomeManager: ObservableObject {
         timer.resume()
         self.timer = timer
     }
+
+    func handleTempoEditingChange(isEditing: Bool) {
+        if isEditing {
+            beginInteractiveChange()
+        } else {
+            endInteractiveChange()
+        }
+    }
+
+    func changeTimeSignature(to signature: TimeSignature) {
+        guard timeSignature != signature else { return }
+        let shouldResume = isPlaying || wasPlayingBeforeAdjustment
+
+        if shouldResume {
+            beginInteractiveChange()
+            wasPlayingBeforeAdjustment = true
+        } else {
+            cancelAutoResume(resetFlag: true)
+        }
+
+        timeSignature = signature
+
+        if shouldResume {
+            endInteractiveChange()
+        }
+    }
+
+    private func beginInteractiveChange() {
+        cancelAutoResume(resetFlag: false)
+
+        if isPlaying {
+            wasPlayingBeforeAdjustment = true
+            pauseMetronomeForAdjustment()
+        }
+    }
+
+    private func endInteractiveChange() {
+        scheduleAutoResume()
+    }
+
+    private func pauseMetronomeForAdjustment() {
+        guard isPlaying else { return }
+
+        resetTimerState()
+        audioManager.stopMetronome()
+        isPlaying = false
+        beatIndex = 0
+        currentBeat = 0
+    }
+
+    private func scheduleAutoResume() {
+        cancelAutoResume(resetFlag: false)
+        guard wasPlayingBeforeAdjustment else { return }
+
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self = self else { return }
+            self.start()
+            self.wasPlayingBeforeAdjustment = false
+        }
+
+        resumeWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + autoResumeDelay, execute: workItem)
+    }
+
+    private func cancelAutoResume(resetFlag: Bool) {
+        resumeWorkItem?.cancel()
+        resumeWorkItem = nil
+
+        if resetFlag {
+            wasPlayingBeforeAdjustment = false
+        }
+    }
+
+    private func resetTimerState() {
+        timer?.cancel()
+        timer = nil
+    }
 }
 
 struct MetronomeView: View {
     @StateObject private var metronome = MetronomeManager()
-    private let timeSignatureColumns = [GridItem(.adaptive(minimum: 80), spacing: 12)]
+    private let timeSignatureColumns: [GridItem] = Array(
+        repeating: GridItem(.flexible(), spacing: 12),
+        count: 3
+    )
 
     var body: some View {
         ZStack {
@@ -126,9 +212,15 @@ struct MetronomeView: View {
                                 .foregroundColor(Color.appSubtitle)
                         }
 
-                        Slider(value: $metronome.tempo, in: 40...240, step: 1)
+                        Slider(
+                            value: $metronome.tempo,
+                            in: 40...240,
+                            step: 1,
+                            onEditingChanged: { editing in
+                                metronome.handleTempoEditingChange(isEditing: editing)
+                            }
+                        )
                             .accentColor(Color(red: 0.91, green: 0.55, blue: 0.56))
-                            .disabled(metronome.isPlaying)
                     }
 
                     // Time signature selector
@@ -141,9 +233,7 @@ struct MetronomeView: View {
                         LazyVGrid(columns: timeSignatureColumns, alignment: .center, spacing: 12) {
                             ForEach(TimeSignature.allCases) { signature in
                                 Button(action: {
-                                    if !metronome.isPlaying {
-                                        metronome.timeSignature = signature
-                                    }
+                                    metronome.changeTimeSignature(to: signature)
                                 }) {
                                     Text(signature.rawValue)
                                         .font(.system(size: 18, weight: .semibold))
@@ -161,7 +251,6 @@ struct MetronomeView: View {
                                                 )
                                         )
                                 }
-                                .disabled(metronome.isPlaying)
                             }
                         }
                         .padding(.horizontal, 12)
@@ -202,8 +291,36 @@ struct BeatIndicatorView: View {
     let totalBeats: Int
     let isPlaying: Bool
 
+    private var layoutConfiguration: (columns: [GridItem], circleSize: CGFloat, spacing: CGFloat) {
+        switch totalBeats {
+        case 0...4:
+            let count = max(totalBeats, 1)
+            return (
+                Array(repeating: GridItem(.flexible(), spacing: 16), count: count),
+                50,
+                16
+            )
+        case 5...8:
+            let columns = Int(ceil(Double(totalBeats) / 2.0))
+            return (
+                Array(repeating: GridItem(.flexible(), spacing: 12), count: columns),
+                40,
+                12
+            )
+        default:
+            let columns = Int(ceil(Double(totalBeats) / 2.0))
+            return (
+                Array(repeating: GridItem(.flexible(), spacing: 10), count: max(columns, 1)),
+                34,
+                10
+            )
+        }
+    }
+
     var body: some View {
-        HStack(spacing: 16) {
+        let layout = layoutConfiguration
+
+        LazyVGrid(columns: layout.columns, alignment: .center, spacing: layout.spacing) {
             ForEach(0..<totalBeats, id: \.self) { beat in
                 Circle()
                     .fill(
@@ -211,7 +328,7 @@ struct BeatIndicatorView: View {
                             ? Color(red: 0.91, green: 0.55, blue: 0.56)
                             : Color.appMantle
                     )
-                    .frame(width: 50, height: 50)
+                    .frame(width: layout.circleSize, height: layout.circleSize)
                     .overlay(
                         Circle()
                             .stroke(
