@@ -168,7 +168,7 @@ class GameSettings: ObservableObject {
     @Published var duration: GameDuration = .oneMinute
     @Published var includeAccidentals: Bool = true
     @Published var soundEnabled: Bool = true
-    @Published var responseSoundEnabled: Bool = false
+    @Published var hapticFeedbackEnabled: Bool = false
 
     static let shared = GameSettings()
 

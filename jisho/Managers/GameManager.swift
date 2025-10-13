@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import UIKit
 
 @MainActor
 class GameManager: ObservableObject {
@@ -26,6 +27,7 @@ class GameManager: ObservableObject {
     private let audioManager: AudioManager
     private let resultStore: PracticeResultStore
     private var sessionStartDate: Date?
+    private let feedbackGenerator = UINotificationFeedbackGenerator()
 
     var accuracy: String {
         guard totalAttempts > 0 else { return "-" }
@@ -58,6 +60,7 @@ class GameManager: ObservableObject {
         isGameActive = true
         lastSessionResult = nil
         sessionStartDate = Date()
+        feedbackGenerator.prepare()
 
         if let duration = settings.duration.seconds {
             timeRemaining = duration
@@ -213,14 +216,16 @@ class GameManager: ObservableObject {
             score += 1
             lastAnswerCorrect = true
 
-            if settings.responseSoundEnabled {
-                audioManager.playCorrectSound()
+            if settings.hapticFeedbackEnabled {
+                feedbackGenerator.notificationOccurred(.success)
+                feedbackGenerator.prepare()
             }
         } else {
             lastAnswerCorrect = false
 
-            if settings.responseSoundEnabled {
-                audioManager.playIncorrectSound()
+            if settings.hapticFeedbackEnabled {
+                feedbackGenerator.notificationOccurred(.error)
+                feedbackGenerator.prepare()
             }
         }
 

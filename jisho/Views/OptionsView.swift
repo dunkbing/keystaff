@@ -68,8 +68,8 @@ struct OptionsView: View {
                             )
 
                             ToggleRow(
-                                title: "Response Sound",
-                                isOn: $settings.responseSoundEnabled
+                                title: "Haptic",
+                                isOn: $settings.hapticFeedbackEnabled
                             )
                         }
                         .padding()
