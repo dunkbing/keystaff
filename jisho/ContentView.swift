@@ -18,7 +18,7 @@ struct ContentView: View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
                 NavigationView {
-                    Text("Search")
+                    OfflineSearchView()
                         .environmentObject(themeManager)
                         .onAppear { showTabBar = true }
                         .navigationBarTitleDisplayMode(.inline)
@@ -27,7 +27,7 @@ struct ContentView: View {
                 .tag(0)
 
                 NavigationView {
-                    Text("Bookmarks")
+                    BookmarksView()
                         .environmentObject(themeManager)
                         .onAppear {
                             showTabBar = true

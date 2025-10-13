@@ -8,7 +8,21 @@
 
 /* Begin PBXBuildFile section */
 		C34A22D02E896BF700CB9A2F /* TikimUI in Frameworks */ = {isa = PBXBuildFile; productRef = C34A22CF2E896BF700CB9A2F /* TikimUI */; };
+		C34A23C12E898E0F00CB9A2F /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = C34A23C02E898E0F00CB9A2F /* GRDB */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C34A23D12E8991C900CB9A2F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		C34A22BD2E8967F700CB9A2F /* jisho.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = jisho.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -28,6 +42,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C34A22D02E896BF700CB9A2F /* TikimUI in Frameworks */,
+				C34A23C12E898E0F00CB9A2F /* GRDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,6 +75,7 @@
 				C34A22B92E8967F700CB9A2F /* Sources */,
 				C34A22BA2E8967F700CB9A2F /* Frameworks */,
 				C34A22BB2E8967F700CB9A2F /* Resources */,
+				C34A23D12E8991C900CB9A2F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -71,6 +87,7 @@
 			name = jisho;
 			packageProductDependencies = (
 				C34A22CF2E896BF700CB9A2F /* TikimUI */,
+				C34A23C02E898E0F00CB9A2F /* GRDB */,
 			);
 			productName = jisho;
 			productReference = C34A22BD2E8967F700CB9A2F /* jisho.app */;
@@ -102,6 +119,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				C34A22CE2E896BF700CB9A2F /* XCLocalSwiftPackageReference "../TikimUI" */,
+				C34A23BF2E898E0F00CB9A2F /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C34A22BE2E8967F700CB9A2F /* Products */;
@@ -353,10 +371,26 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		C34A23BF2E898E0F00CB9A2F /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		C34A22CF2E896BF700CB9A2F /* TikimUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = TikimUI;
+		};
+		C34A23C02E898E0F00CB9A2F /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C34A23BF2E898E0F00CB9A2F /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+			productName = GRDB;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
