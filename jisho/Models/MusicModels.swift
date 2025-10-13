@@ -229,4 +229,17 @@ enum TimeSignature: String, CaseIterable, Identifiable {
         case .twelveEight: return 12
         }
     }
+
+    var accentBeats: [Int] {
+        switch self {
+        case .twoFour, .twoTwo, .threeFour, .threeEight, .fourFour:
+            return [0]
+        case .sixEight:
+            return [0, 3]
+        case .nineEight:
+            return [0, 3, 6]
+        case .twelveEight:
+            return [0, 3, 6, 9]
+        }
+    }
 }

@@ -56,6 +56,7 @@ class AudioManager: ObservableObject {
             return
         }
 
+        player.volume = isAccent ? 1.0 : 0.55
         // Reset to beginning and play
         player.currentTime = 0
         player.play()

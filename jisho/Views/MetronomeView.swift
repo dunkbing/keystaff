@@ -71,7 +71,7 @@ class MetronomeManager: ObservableObject {
             guard let self = self, self.isPlaying else { return }
             self.beatIndex = (self.beatIndex + 1) % self.timeSignature.beatsPerMeasure
             self.currentBeat = self.beatIndex
-            let isAccent = self.beatIndex == 0
+            let isAccent = self.timeSignature.accentBeats.contains(self.beatIndex)
             self.audioManager.playMetronomeBeat(isAccent: isAccent)
         }
         timer.resume()
