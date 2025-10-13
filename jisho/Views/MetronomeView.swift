@@ -83,22 +83,24 @@ struct MetronomeView: View {
                 .ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 30) {
+                VStack(spacing: 20) {
                     // BPM Display
-                    VStack(spacing: 12) {
+                    VStack(spacing: 10) {
                         Text("TEMPO")
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundColor(Color.appSubtitle)
 
-                        Text(metronome.bpm)
-                            .font(.system(size: 80, weight: .bold))
-                            .foregroundColor(Color.appText)
+                        HStack(spacing: 5) {
+                            Text(metronome.bpm)
+                                .font(.system(size: 80, weight: .bold))
+                                .foregroundColor(Color.appText)
 
-                        Text("BPM")
-                            .font(.title3)
-                            .fontWeight(.medium)
-                            .foregroundColor(Color.appSubtitle)
+                            Text("BPM")
+                                .font(.title3)
+                                .fontWeight(.medium)
+                                .foregroundColor(Color.appSubtitle)
+                        }
                     }
 
                     // Beat indicator
