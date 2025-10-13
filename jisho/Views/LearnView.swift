@@ -13,25 +13,13 @@ struct LearnView: View {
         ScrollView {
             VStack(spacing: 24) {
                 // Reference cards
-                NavigationLink(destination: ClefReferenceView(clef: .treble)) {
-                    ReferenceCard(
-                        title: "Treble Reference",
-                        icon: "music.note"
-                    )
-                }
-
-                NavigationLink(destination: ClefReferenceView(clef: .bass)) {
-                    ReferenceCard(
-                        title: "Bass Reference",
-                        icon: "music.note"
-                    )
-                }
-
-                NavigationLink(destination: ClefReferenceView(clef: .alto)) {
-                    ReferenceCard(
-                        title: "Alto Reference",
-                        icon: "music.note"
-                    )
+                ForEach(Clef.allCases) { clef in
+                    NavigationLink(destination: ClefReferenceView(clef: clef)) {
+                        ReferenceCard(
+                            title: clef.referenceTitleKey,
+                            icon: "music.note"
+                        )
+                    }
                 }
 
                 // Info section
@@ -71,7 +59,7 @@ struct LearnView: View {
 }
 
 struct ReferenceCard: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
 
     var body: some View {
@@ -126,7 +114,7 @@ struct ClefReferenceView: View {
 
                 // Information
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("About \(clef.rawValue) Clef")
+                    Text(clef.aboutTitleKey)
                         .font(.title3)
                         .fontWeight(.bold)
                         .foregroundColor(Color.appText)
@@ -153,7 +141,7 @@ struct ClefReferenceView: View {
             .padding()
         }
         .background(Color.appBackground.ignoresSafeArea())
-        .navigationTitle("\(clef.rawValue) Reference")
+        .navigationTitle(clef.referenceTitleKey)
         .navigationBarTitleDisplayMode(.inline)
     }
 }

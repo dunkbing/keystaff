@@ -13,11 +13,24 @@ class AudioManager: ObservableObject {
 
     private var notePlayer: AVAudioPlayer?
     private var metronomePlayer: AVAudioPlayer?
-    private var audioEngine: AVAudioEngine?
-    private var playerNode: AVAudioPlayerNode?
 
     private init() {
         setupAudioSession()
+        setupMetronomePlayer()
+    }
+
+    private func setupMetronomePlayer() {
+        guard let url = Bundle.main.url(forResource: "metronome", withExtension: "mp3") else {
+            print("❌ Failed to find metronome.mp3")
+            return
+        }
+
+        do {
+            metronomePlayer = try AVAudioPlayer(contentsOf: url)
+            metronomePlayer?.prepareToPlay()
+        } catch {
+            print("❌ Failed to load metronome audio: \(error)")
+        }
     }
 
     private func setupAudioSession() {
@@ -33,22 +46,28 @@ class AudioManager: ObservableObject {
     func playNote(_ note: MusicNote) {
         // Generate a simple sine wave for the note
         let frequency = frequencyForNote(note)
-        generateTone(frequency: frequency, duration: 0.5, isMetronome: false)
+        generateTone(frequency: frequency, duration: 0.5)
     }
 
     // MARK: - Metronome Playback
     func playMetronomeBeat(isAccent: Bool = false) {
-        let frequency: Double = isAccent ? 880.0 : 440.0 // A5 for accent, A4 for regular
-        generateTone(frequency: frequency, duration: 0.1, isMetronome: true)
+        guard let player = metronomePlayer else {
+            print("❌ Metronome player not initialized")
+            return
+        }
+
+        // Reset to beginning and play
+        player.currentTime = 0
+        player.play()
     }
 
     // MARK: - Response Sounds
     func playCorrectSound() {
-        generateTone(frequency: 523.25, duration: 0.2, isMetronome: false) // C5
+        generateTone(frequency: 523.25, duration: 0.2) // C5
     }
 
     func playIncorrectSound() {
-        generateTone(frequency: 196.00, duration: 0.3, isMetronome: false) // G3
+        generateTone(frequency: 196.00, duration: 0.3) // G3
     }
 
     // MARK: - Helper Methods
@@ -86,7 +105,7 @@ class AudioManager: ObservableObject {
         return result
     }
 
-    private func generateTone(frequency: Double, duration: Double, isMetronome: Bool) {
+    private func generateTone(frequency: Double, duration: Double) {
         let sampleRate = 44100.0
         let amplitude = 0.3
         let samples = Int(sampleRate * duration)
@@ -133,7 +152,7 @@ class AudioManager: ObservableObject {
             }
         }
 
-        // Play the buffer
+        // Create a temporary engine for note playback
         do {
             let engine = AVAudioEngine()
             let player = AVAudioPlayerNode()
@@ -148,12 +167,6 @@ class AudioManager: ObservableObject {
                 }
             }
             player.play()
-
-            // Store references to prevent deallocation
-            if isMetronome {
-                self.audioEngine = engine
-                self.playerNode = player
-            }
         } catch {
             print("Failed to play tone: \(error)")
         }
@@ -162,6 +175,10 @@ class AudioManager: ObservableObject {
     func stopAll() {
         notePlayer?.stop()
         metronomePlayer?.stop()
-        audioEngine?.stop()
+        stopMetronome()
+    }
+
+    func stopMetronome() {
+        metronomePlayer?.stop()
     }
 }

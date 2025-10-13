@@ -63,12 +63,13 @@ struct SessionHistoryView: View {
 }
 
 private struct HistoryStat: View {
-    let label: String
+    let label: LocalizedStringKey
     let value: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(label.uppercased())
+            Text(label)
+                .textCase(.uppercase)
                 .font(.caption2)
                 .foregroundColor(Color.appSubtitle)
             Text(value)

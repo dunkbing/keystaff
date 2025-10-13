@@ -11,11 +11,14 @@ import TikimUI
 class MetronomeManager: ObservableObject {
     @Published var isPlaying: Bool = false
     @Published var tempo: Double = 120
-    @Published var timeSignature: TimeSignature = .fourFour
+    @Published var timeSignature: TimeSignature = .fourFour {
+        didSet { updateBeatCycle() }
+    }
     @Published var currentBeat: Int = 0
 
-    private var timer: Timer?
+    private var timer: DispatchSourceTimer?
     private let audioManager = AudioManager.shared
+    private var beatIndex: Int = 0
 
     var bpm: String {
         String(format: "%.0f", tempo)
@@ -30,40 +33,49 @@ class MetronomeManager: ObservableObject {
     }
 
     func start() {
+        stop()
         isPlaying = true
+        beatIndex = timeSignature.beatsPerMeasure - 1
         currentBeat = 0
-        scheduleNextBeat()
+        scheduleTimer(fireImmediately: true)
     }
 
     func stop() {
         isPlaying = false
-        timer?.invalidate()
+        timer?.cancel()
         timer = nil
+        beatIndex = 0
         currentBeat = 0
+        audioManager.stopMetronome()
     }
 
-    private func scheduleNextBeat() {
+    func updateBeatCycle() {
+        beatIndex = beatIndex % max(timeSignature.beatsPerMeasure, 1)
+        currentBeat = beatIndex
+    }
+
+    private func scheduleTimer(fireImmediately: Bool) {
         guard isPlaying else { return }
 
-        // Calculate interval in seconds
         let interval = 60.0 / tempo
 
-        // Play beat sound
-        let isAccent = currentBeat == 0
-        audioManager.playMetronomeBeat(isAccent: isAccent)
-
-        // Update beat counter
-        currentBeat = (currentBeat + 1) % timeSignature.beatsPerMeasure
-
-        // Schedule next beat
-        DispatchQueue.main.asyncAfter(deadline: .now() + interval) { [weak self] in
-            self?.scheduleNextBeat()
+        let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.main)
+        timer.schedule(deadline: fireImmediately ? .now() : .now() + interval, repeating: interval)
+        timer.setEventHandler { [weak self] in
+            guard let self = self, self.isPlaying else { return }
+            self.beatIndex = (self.beatIndex + 1) % self.timeSignature.beatsPerMeasure
+            self.currentBeat = self.beatIndex
+            let isAccent = self.beatIndex == 0
+            self.audioManager.playMetronomeBeat(isAccent: isAccent)
         }
+        timer.resume()
+        self.timer = timer
     }
 }
 
 struct MetronomeView: View {
     @StateObject private var metronome = MetronomeManager()
+    private let timeSignatureColumns = [GridItem(.adaptive(minimum: 80), spacing: 12)]
 
     var body: some View {
         ZStack {
@@ -124,7 +136,7 @@ struct MetronomeView: View {
                             .fontWeight(.medium)
                             .foregroundColor(Color.appSubtitle)
 
-                        HStack(spacing: 12) {
+                        LazyVGrid(columns: timeSignatureColumns, alignment: .center, spacing: 12) {
                             ForEach(TimeSignature.allCases) { signature in
                                 Button(action: {
                                     if !metronome.isPlaying {
@@ -150,6 +162,7 @@ struct MetronomeView: View {
                                 .disabled(metronome.isPlaying)
                             }
                         }
+                        .padding(.horizontal, 12)
                     }
                 }
                 .padding(.top, 30)

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 // MARK: - Note Model
 struct MusicNote: Identifiable, Equatable {
@@ -107,6 +108,28 @@ enum Clef: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    var referenceTitleKey: LocalizedStringKey {
+        switch self {
+        case .treble:
+            return "Treble Reference"
+        case .bass:
+            return "Bass Reference"
+        case .alto:
+            return "Alto Reference"
+        }
+    }
+
+    var aboutTitleKey: LocalizedStringKey {
+        switch self {
+        case .treble:
+            return "About Treble Clef"
+        case .bass:
+            return "About Bass Clef"
+        case .alto:
+            return "About Alto Clef"
+        }
+    }
+
     var defaultRange: NoteRange {
         switch self {
         case .treble:
@@ -186,7 +209,11 @@ enum TimeSignature: String, CaseIterable, Identifiable {
     case twoFour = "2/4"
     case threeFour = "3/4"
     case fourFour = "4/4"
+    case twoTwo = "2/2"
+    case threeEight = "3/8"
     case sixEight = "6/8"
+    case nineEight = "9/8"
+    case twelveEight = "12/8"
 
     var id: String { rawValue }
 
@@ -195,7 +222,11 @@ enum TimeSignature: String, CaseIterable, Identifiable {
         case .twoFour: return 2
         case .threeFour: return 3
         case .fourFour: return 4
+        case .twoTwo: return 2
+        case .threeEight: return 3
         case .sixEight: return 6
+        case .nineEight: return 9
+        case .twelveEight: return 12
         }
     }
 }

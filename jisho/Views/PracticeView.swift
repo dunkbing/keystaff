@@ -176,7 +176,7 @@ struct PracticeView: View {
 }
 
 struct StatView: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
 
     var body: some View {
@@ -234,20 +234,20 @@ struct MenuView: View {
                     )
                 }
 
-                NavigationLink(destination: LearnView()) {
-                    HStack {
-                        Image(systemName: "book")
-                        Text("Learn")
-                    }
-                    .font(.headline)
-                    .foregroundColor(Color.appText)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.appMantle)
-                    )
-                }
+//                NavigationLink(destination: LearnView()) {
+//                    HStack {
+//                        Image(systemName: "book")
+//                        Text("Learn")
+//                    }
+//                    .font(.headline)
+//                    .foregroundColor(Color.appText)
+//                    .frame(maxWidth: .infinity)
+//                    .padding()
+//                    .background(
+//                        RoundedRectangle(cornerRadius: 12)
+//                            .fill(Color.appMantle)
+//                    )
+//                }
 
                 Spacer()
             }
@@ -281,11 +281,6 @@ struct MenuView: View {
             )
         }
     }
-}
-
-#Preview {
-    PracticeView()
-        .environmentObject(GameSettings.shared)
 }
 
 struct SessionSummaryOverlay: View {
@@ -405,7 +400,7 @@ struct SessionSummaryOverlay: View {
 }
 
 struct SummaryStat: View {
-    let label: String
+    let label: LocalizedStringKey
     let value: String
 
     var body: some View {
