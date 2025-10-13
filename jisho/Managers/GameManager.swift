@@ -203,8 +203,8 @@ class GameManager: ObservableObject {
         let semitone1 = calculateSemitone(note: note1.0, accidental: note1.1)
         let semitone2 = calculateSemitone(note: note2.0, accidental: note2.1)
 
-        // Check if they're the same semitone (modulo 12 for octave equivalence)
-        return (semitone1 % 12) == (semitone2 % 12)
+        // Check if they're the same semitone (normalized for octave equivalence)
+        return normalizedSemitone(semitone1) == normalizedSemitone(semitone2)
     }
 
     private func calculateSemitone(note: NoteName, accidental: Accidental) -> Int {
@@ -220,5 +220,10 @@ class GameManager: ObservableObject {
         }
 
         return semitone
+    }
+
+    private func normalizedSemitone(_ value: Int) -> Int {
+        let remainder = value % 12
+        return remainder >= 0 ? remainder : remainder + 12
     }
 }

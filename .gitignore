@@ -7,3 +7,7 @@ xcuserdata/
 
 ## MacOS
 .DS_Store
+
+node_modules
+.env
+jmdict.json
