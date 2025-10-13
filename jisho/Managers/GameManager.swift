@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+@MainActor
 class GameManager: ObservableObject {
     @Published var currentNote: MusicNote?
     @Published var currentClef: Clef = .treble
@@ -18,10 +19,13 @@ class GameManager: ObservableObject {
     @Published var isGameActive: Bool = false
     @Published var showFeedback: Bool = false
     @Published var lastAnswerCorrect: Bool = false
+    @Published var lastSessionResult: SessionResult?
 
     private var timer: Timer?
     private let settings: GameSettings
     private let audioManager: AudioManager
+    private let resultStore: PracticeResultStore
+    private var sessionStartDate: Date?
 
     var accuracy: String {
         guard totalAttempts > 0 else { return "-" }
@@ -35,9 +39,15 @@ class GameManager: ObservableObject {
         return String(format: "%02d:%02d", minutes, seconds)
     }
 
-    init(settings: GameSettings = .shared, audioManager: AudioManager = .shared) {
+    init(
+        settings: GameSettings = .shared,
+        audioManager: AudioManager = .shared,
+        resultStore: PracticeResultStore = .shared
+    ) {
         self.settings = settings
         self.audioManager = audioManager
+        self.resultStore = resultStore
+        self.lastSessionResult = resultStore.recentResults().last
     }
 
     // MARK: - Game Control
@@ -46,6 +56,8 @@ class GameManager: ObservableObject {
         totalAttempts = 0
         correctAttempts = 0
         isGameActive = true
+        lastSessionResult = nil
+        sessionStartDate = Date()
 
         if let duration = settings.duration.seconds {
             timeRemaining = duration
@@ -57,16 +69,41 @@ class GameManager: ObservableObject {
         generateNewNote()
     }
 
-    func stopGame() {
+    func stopGame(shouldRecordResult: Bool = true) {
+        guard isGameActive else { return }
+
         isGameActive = false
         timer?.invalidate()
         timer = nil
+        timeRemaining = 0
+
+        if shouldRecordResult,
+            totalAttempts > 0,
+            let startDate = sessionStartDate
+        {
+            let duration = Date().timeIntervalSince(startDate)
+            let result = SessionResult(
+                duration: duration,
+                score: score,
+                correctAttempts: correctAttempts,
+                totalAttempts: totalAttempts
+            )
+            lastSessionResult = result
+            resultStore.add(result)
+        }
+
+        sessionStartDate = nil
         currentNote = nil
     }
 
     func resetGame() {
-        stopGame()
+        stopGame(shouldRecordResult: totalAttempts > 0)
         startGame()
+    }
+
+    func clearHistory() {
+        resultStore.clearAll()
+        lastSessionResult = nil
     }
 
     private func startTimer() {
