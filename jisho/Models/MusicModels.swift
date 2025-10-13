@@ -22,28 +22,33 @@ struct MusicNote: Identifiable, Equatable {
         "\(name.rawValue)\(accidental.symbol)\(octave)"
     }
 
-    // Position on staff (0 = middle line for treble C5, bass A3, alto C4)
+    // Position on staff (0 = middle line)
+    // Each position is one staff line or space
+    // Positive numbers go up, negative go down
     func position(for clef: Clef) -> Int {
         let baseNote: NoteName
         let baseOctave: Int
 
         switch clef {
         case .treble:
-            baseNote = .c
-            baseOctave = 5
+            // Middle line (B4) is position 0
+            baseNote = .b
+            baseOctave = 4
         case .bass:
-            baseNote = .a
+            // Middle line (D3) is position 0
+            baseNote = .d
             baseOctave = 3
         case .alto:
+            // Middle line (C4) is position 0
             baseNote = .c
             baseOctave = 4
         }
 
-        let basePosition = 0
-        let noteDistance = name.semitonesFromC - baseNote.semitonesFromC
-        let octaveDistance = (octave - baseOctave) * 7
+        // Calculate position based on diatonic scale (7 notes per octave)
+        let noteSteps = name.staffPosition - baseNote.staffPosition
+        let octaveSteps = (octave - baseOctave) * 7
 
-        return basePosition + (noteDistance / 2) + octaveDistance
+        return noteSteps + octaveSteps
     }
 }
 

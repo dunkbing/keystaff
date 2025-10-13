@@ -49,6 +49,7 @@ struct PracticeView: View {
                 .padding(.top, 20)
 
                 Spacer()
+                    .frame(minHeight: 20, maxHeight: 40)
 
                 // Staff with note
                 StaffView(
@@ -57,22 +58,23 @@ struct PracticeView: View {
                     showNote: gameManager.isGameActive
                 )
                 .padding(.horizontal)
-                .padding(.vertical, 40)
+                .padding(.vertical, 20)
                 .opacity(gameManager.showFeedback ? 0.3 : 1.0)
                 .animation(.easeInOut(duration: 0.15), value: gameManager.showFeedback)
 
                 Spacer()
+                    .frame(minHeight: 10, maxHeight: 30)
 
                 // Input mode toggle
                 HStack(spacing: 16) {
                     ForEach(InputMode.allCases, id: \.self) { mode in
                         Button(action: { inputMode = mode }) {
                             Text(mode.rawValue)
-                                .font(.system(size: 16, weight: .medium))
+                                .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(
                                     inputMode == mode ? Color.appText : Color.appSubtitle)
-                                .padding(.horizontal, 24)
-                                .padding(.vertical, 12)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
                                         .fill(
@@ -83,7 +85,7 @@ struct PracticeView: View {
                         }
                     }
                 }
-                .padding(.bottom, 16)
+                .padding(.bottom, 12)
 
                 // Input area
                 Group {
@@ -95,7 +97,7 @@ struct PracticeView: View {
                                 gameManager.checkAnswer(note, accidental: accidental)
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, 12)
                     } else {
                         PianoKeyboardView { note, accidental in
                             if gameManager.isGameActive {
@@ -105,10 +107,7 @@ struct PracticeView: View {
                         .padding(.horizontal, 8)
                     }
                 }
-                .padding(.bottom, 20)
-
-                Spacer()
-                    .frame(height: 80)
+                .padding(.bottom, 100)
             }
 
             // Feedback overlay

@@ -91,18 +91,18 @@ struct NoteSymbolView: View {
 
     var body: some View {
         ZStack {
-            // Ledger lines if needed
-            LedgerLinesView(
-                position: notePosition,
-                lineSpacing: lineSpacing,
-                staffCenter: staffCenter
-            )
-
             // Note head
             Circle()
                 .fill(Color.appText)
                 .frame(width: noteSize, height: noteSize * 0.7)
                 .offset(y: noteOffset)
+
+            // Ledger lines if needed (positioned with the note)
+            LedgerLinesView(
+                position: notePosition,
+                lineSpacing: lineSpacing
+            )
+            .offset(y: noteOffset)
 
             // Accidental symbol
             if note.accidental != .natural {
@@ -128,38 +128,22 @@ struct NoteSymbolView: View {
 struct LedgerLinesView: View {
     let position: Int
     let lineSpacing: CGFloat
-    let staffCenter: CGFloat
 
     private let ledgerLineWidth: CGFloat = 40
 
     var body: some View {
         ZStack {
-            // Ledger lines above staff (position > 4)
-            if position > 4 {
-                ForEach(5...position, id: \.self) { pos in
-                    if pos % 2 == 1 {  // Only draw lines for odd positions
-                        Path { path in
-                            let y = -CGFloat(pos) * lineSpacing / 2
-                            path.move(to: CGPoint(x: -ledgerLineWidth / 2, y: y))
-                            path.addLine(to: CGPoint(x: ledgerLineWidth / 2, y: y))
-                        }
-                        .stroke(Color.appText, lineWidth: 2)
-                    }
-                }
-            }
+            // Draw a single ledger line through the note if it's on a ledger line
+            // Ledger lines are only drawn if the note position is even (on a line, not in a space)
+            // and is outside the staff (position > 4 or position < -4)
 
-            // Ledger lines below staff (position < -4)
-            if position < -4 {
-                ForEach(position...(-5), id: \.self) { pos in
-                    if pos % 2 == 1 {  // Only draw lines for odd positions
-                        Path { path in
-                            let y = -CGFloat(pos) * lineSpacing / 2
-                            path.move(to: CGPoint(x: -ledgerLineWidth / 2, y: y))
-                            path.addLine(to: CGPoint(x: ledgerLineWidth / 2, y: y))
-                        }
-                        .stroke(Color.appText, lineWidth: 2)
-                    }
+            if abs(position) > 4 && position % 2 == 0 {
+                Path { path in
+                    // Draw horizontal line through the note (y=0 since we're offset with the note)
+                    path.move(to: CGPoint(x: -ledgerLineWidth / 2, y: 0))
+                    path.addLine(to: CGPoint(x: ledgerLineWidth / 2, y: 0))
                 }
+                .stroke(Color.appText, lineWidth: 2)
             }
         }
     }

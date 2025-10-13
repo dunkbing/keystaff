@@ -157,7 +157,17 @@ class GameManager: ObservableObject {
     func checkAnswer(_ answer: NoteName, accidental: Accidental = .natural) {
         guard let currentNote = currentNote else { return }
 
-        let isCorrect = answer == currentNote.name && accidental == currentNote.accidental
+        // Check for exact match first
+        var isCorrect = answer == currentNote.name && accidental == currentNote.accidental
+
+        // If not exact match, check for enharmonic equivalent
+        // (e.g., C# = Db, D# = Eb, F# = Gb, G# = Ab, A# = Bb)
+        if !isCorrect {
+            isCorrect = areEnharmonicEquivalents(
+                note1: (answer, accidental),
+                note2: (currentNote.name, currentNote.accidental)
+            )
+        }
 
         totalAttempts += 1
 
@@ -183,5 +193,32 @@ class GameManager: ObservableObject {
             self.showFeedback = false
             self.generateNewNote()
         }
+    }
+
+    private func areEnharmonicEquivalents(
+        note1: (NoteName, Accidental),
+        note2: (NoteName, Accidental)
+    ) -> Bool {
+        // Calculate semitone values
+        let semitone1 = calculateSemitone(note: note1.0, accidental: note1.1)
+        let semitone2 = calculateSemitone(note: note2.0, accidental: note2.1)
+
+        // Check if they're the same semitone (modulo 12 for octave equivalence)
+        return (semitone1 % 12) == (semitone2 % 12)
+    }
+
+    private func calculateSemitone(note: NoteName, accidental: Accidental) -> Int {
+        var semitone = note.semitonesFromC
+
+        switch accidental {
+        case .sharp:
+            semitone += 1
+        case .flat:
+            semitone -= 1
+        case .natural:
+            break
+        }
+
+        return semitone
     }
 }

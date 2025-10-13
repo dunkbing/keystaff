@@ -21,10 +21,10 @@ struct MusicNoteButtonsView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 10) {
             // Accidental notes row (if enabled)
             if includeAccidentals {
-                HStack(spacing: 8) {
+                HStack(spacing: 6) {
                     ForEach(accidentalNotes, id: \.0) { note, accidental in
                         NoteButton(
                             note: note,
@@ -36,7 +36,7 @@ struct MusicNoteButtonsView: View {
             }
 
             // Natural notes row
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 ForEach(naturalNotes, id: \.self) { note in
                     NoteButton(
                         note: note,
@@ -66,12 +66,12 @@ struct NoteButton: View {
             }
         }) {
             Text("\(note.rawValue)\(accidental.symbol)")
-                .font(.system(size: 24, weight: .semibold))
+                .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(Color.appText)
                 .frame(maxWidth: .infinity)
-                .frame(height: 60)
+                .frame(height: 50)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 10)
                         .fill(
                             isPressed
                                 ? Color.appAccent.opacity(0.3)
@@ -79,7 +79,7 @@ struct NoteButton: View {
                         )
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 10)
                         .stroke(
                             isPressed ? Color.appAccent : Color.appSubtitle.opacity(0.2),
                             lineWidth: 2
