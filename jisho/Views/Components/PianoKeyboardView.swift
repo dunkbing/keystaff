@@ -21,7 +21,11 @@ struct PianoKeyboardView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            ZStack(alignment: .top) {
+            let whiteKeyWidth = geometry.size.width / 7
+            let blackKeyWidth = whiteKeyWidth * 0.6
+            let blackKeyHeight: CGFloat = 85
+
+            ZStack(alignment: .topLeading) {
                 // White keys
                 HStack(spacing: 0) {
                     ForEach(whiteKeys, id: \.self) { note in
@@ -31,26 +35,44 @@ struct PianoKeyboardView: View {
                     }
                 }
 
-                // Black keys
-                HStack(spacing: 0) {
-                    ForEach(0..<7) { index in
-                        if let note = blackKeyPositions[index] {
-                            BlackKeyView(note: note) {
-                                onKeyPress(note, .sharp)
-                            }
-                            .offset(
-                                x: -geometry.size.width / 14 / 2,
-                                y: 0
-                            )
-                        } else {
-                            Color.clear
-                                .frame(width: geometry.size.width / 7)
-                        }
-                    }
+                // Black keys - positioned absolutely between white keys
+                // C# - between C(0) and D(1)
+                BlackKeyView(note: .c) {
+                    onKeyPress(.c, .sharp)
                 }
+                .frame(width: blackKeyWidth, height: blackKeyHeight)
+                .offset(x: whiteKeyWidth - (blackKeyWidth / 2))
+
+                // D# - between D(1) and E(2)
+                BlackKeyView(note: .d) {
+                    onKeyPress(.d, .sharp)
+                }
+                .frame(width: blackKeyWidth, height: blackKeyHeight)
+                .offset(x: whiteKeyWidth * 2 - (blackKeyWidth / 2))
+
+                // F# - between F(3) and G(4)
+                BlackKeyView(note: .f) {
+                    onKeyPress(.f, .sharp)
+                }
+                .frame(width: blackKeyWidth, height: blackKeyHeight)
+                .offset(x: whiteKeyWidth * 4 - (blackKeyWidth / 2))
+
+                // G# - between G(4) and A(5)
+                BlackKeyView(note: .g) {
+                    onKeyPress(.g, .sharp)
+                }
+                .frame(width: blackKeyWidth, height: blackKeyHeight)
+                .offset(x: whiteKeyWidth * 5 - (blackKeyWidth / 2))
+
+                // A# - between A(5) and B(6)
+                BlackKeyView(note: .a) {
+                    onKeyPress(.a, .sharp)
+                }
+                .frame(width: blackKeyWidth, height: blackKeyHeight)
+                .offset(x: whiteKeyWidth * 6 - (blackKeyWidth / 2))
             }
         }
-        .frame(height: 180)
+        .frame(height: 140)
     }
 }
 
@@ -101,18 +123,11 @@ struct BlackKeyView: View {
                 isPressed = false
             }
         }) {
-            VStack {
-                Spacer()
-            }
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(isPressed ? Color.gray : Color.black)
-            )
+            Rectangle()
+                .fill(isPressed ? Color.gray : Color.black)
+                .cornerRadius(4)
         }
         .buttonStyle(PlainButtonStyle())
-        .frame(height: 110)
-        .padding(.horizontal, 4)
     }
 }
 
