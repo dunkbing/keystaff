@@ -10,6 +10,7 @@ import TikimUI
 
 struct ContentView: View {
     @EnvironmentObject var themeManager: ThemeManager
+    @StateObject private var gameSettings = GameSettings.shared
     @State private var selectedTab = 0
     @State private var previousTab = 0
     @State private var showTabBar = true
@@ -18,21 +19,18 @@ struct ContentView: View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
                 NavigationView {
-                    OfflineSearchView()
-                        .environmentObject(themeManager)
+                    PracticeView()
+                        .environmentObject(gameSettings)
                         .onAppear { showTabBar = true }
-                        .navigationBarTitleDisplayMode(.inline)
                 }
                 .navigationViewStyle(StackNavigationViewStyle())
                 .tag(0)
 
                 NavigationView {
-                    BookmarksView()
-                        .environmentObject(themeManager)
+                    MetronomeView()
                         .onAppear {
                             showTabBar = true
                         }
-                        .navigationBarTitleDisplayMode(.inline)
                 }
                 .navigationViewStyle(StackNavigationViewStyle())
                 .tag(1)
@@ -53,8 +51,8 @@ struct ContentView: View {
                 CustomTabBar(
                     selectedTab: $selectedTab,
                     items: [
-                        (icon: "magnifyingglass", title: "Search"),
-                        (icon: "book", title: "Bookmarks"),
+                        (icon: "music.note.list", title: "Practice"),
+                        (icon: "metronome", title: "Metronome"),
                         (icon: "gear", title: "Settings"),
                     ]
                 )
