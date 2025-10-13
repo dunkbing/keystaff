@@ -70,108 +70,110 @@ struct MetronomeView: View {
             Color.appBackground
                 .ignoresSafeArea()
 
-            VStack(spacing: 40) {
-                Spacer()
-
-                // BPM Display
-                VStack(spacing: 12) {
-                    Text("TEMPO")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(Color.appSubtitle)
-
-                    Text(metronome.bpm)
-                        .font(.system(size: 80, weight: .bold))
-                        .foregroundColor(Color.appText)
-
-                    Text("BPM")
-                        .font(.title3)
-                        .fontWeight(.medium)
-                        .foregroundColor(Color.appSubtitle)
-                }
-
-                // Beat indicator
-                BeatIndicatorView(
-                    currentBeat: metronome.currentBeat,
-                    totalBeats: metronome.timeSignature.beatsPerMeasure,
-                    isPlaying: metronome.isPlaying
-                )
-                .frame(height: 60)
-                .padding(.horizontal)
-
-                // Tempo slider
-                VStack(spacing: 16) {
-                    HStack {
-                        Text("40")
-                            .font(.caption)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 30) {
+                    // BPM Display
+                    VStack(spacing: 12) {
+                        Text("TEMPO")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
                             .foregroundColor(Color.appSubtitle)
 
-                        Spacer()
+                        Text(metronome.bpm)
+                            .font(.system(size: 80, weight: .bold))
+                            .foregroundColor(Color.appText)
 
-                        Text("240")
-                            .font(.caption)
+                        Text("BPM")
+                            .font(.title3)
+                            .fontWeight(.medium)
                             .foregroundColor(Color.appSubtitle)
                     }
 
-                    Slider(value: $metronome.tempo, in: 40...240, step: 1)
-                        .accentColor(Color(red: 0.91, green: 0.55, blue: 0.56))
-                        .disabled(metronome.isPlaying)
-                }
-                .padding(.horizontal, 40)
+                    // Beat indicator
+                    BeatIndicatorView(
+                        currentBeat: metronome.currentBeat,
+                        totalBeats: metronome.timeSignature.beatsPerMeasure,
+                        isPlaying: metronome.isPlaying
+                    )
+                    .frame(height: 60)
+                    .padding(.horizontal)
 
-                // Time signature selector
-                VStack(spacing: 12) {
-                    Text("TIME SIGNATURE")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(Color.appSubtitle)
+                    // Tempo slider
+                    VStack(spacing: 16) {
+                        HStack {
+                            Text("40")
+                                .font(.caption)
+                                .foregroundColor(Color.appSubtitle)
 
-                    HStack(spacing: 12) {
-                        ForEach(TimeSignature.allCases) { signature in
-                            Button(action: {
-                                if !metronome.isPlaying {
-                                    metronome.timeSignature = signature
-                                }
-                            }) {
-                                Text(signature.rawValue)
-                                    .font(.system(size: 18, weight: .semibold))
-                                    .foregroundColor(
-                                        metronome.timeSignature == signature
-                                            ? Color.white : Color.appText
-                                    )
-                                    .frame(width: 70, height: 50)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(
-                                                metronome.timeSignature == signature
-                                                    ? Color(red: 0.91, green: 0.55, blue: 0.56)
-                                                    : Color.appMantle
-                                            )
-                                    )
-                            }
+                            Spacer()
+
+                            Text("240")
+                                .font(.caption)
+                                .foregroundColor(Color.appSubtitle)
+                        }
+
+                        Slider(value: $metronome.tempo, in: 40...240, step: 1)
+                            .accentColor(Color(red: 0.91, green: 0.55, blue: 0.56))
                             .disabled(metronome.isPlaying)
+                    }
+
+                    // Time signature selector
+                    VStack(spacing: 12) {
+                        Text("TIME SIGNATURE")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(Color.appSubtitle)
+
+                        HStack(spacing: 12) {
+                            ForEach(TimeSignature.allCases) { signature in
+                                Button(action: {
+                                    if !metronome.isPlaying {
+                                        metronome.timeSignature = signature
+                                    }
+                                }) {
+                                    Text(signature.rawValue)
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(
+                                            metronome.timeSignature == signature
+                                                ? Color.white : Color.appText
+                                        )
+                                        .frame(width: 70, height: 50)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(
+                                                    metronome.timeSignature == signature
+                                                        ? Color(red: 0.91, green: 0.55, blue: 0.56)
+                                                        : Color.appMantle
+                                                )
+                                        )
+                                }
+                                .disabled(metronome.isPlaying)
+                            }
                         }
                     }
                 }
-
-                Spacer()
-
-                // Play/Pause button
-                Button(action: { metronome.togglePlay() }) {
-                    Image(systemName: metronome.isPlaying ? "pause.fill" : "play.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(.white)
-                        .frame(width: 100, height: 100)
-                        .background(
-                            Circle()
-                                .fill(Color(red: 0.91, green: 0.55, blue: 0.56))
-                        )
-                        .shadow(color: Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.4), radius: 20)
-                }
-                .padding(.bottom, 60)
-
-                Spacer()
+                .padding(.top, 30)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 140)
             }
+        }
+        .overlay(alignment: .bottom) {
+            Button(action: { metronome.togglePlay() }) {
+                Image(systemName: metronome.isPlaying ? "pause.fill" : "play.fill")
+                    .font(.system(size: 36))
+                    .foregroundColor(.white)
+                    .frame(width: 88, height: 88)
+                    .background(
+                        Circle()
+                            .fill(Color(red: 0.91, green: 0.55, blue: 0.56))
+                    )
+                    .shadow(
+                        color: Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.35),
+                        radius: 16,
+                        y: 6
+                    )
+            }
+            .padding(.bottom, 140)
         }
         .navigationBarHidden(true)
         .onDisappear {
@@ -209,8 +211,4 @@ struct BeatIndicatorView: View {
             }
         }
     }
-}
-
-#Preview {
-    MetronomeView()
 }
