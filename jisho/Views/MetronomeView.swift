@@ -165,119 +165,239 @@ struct MetronomeView: View {
 
     var body: some View {
         ZStack {
-            Color.appBackground
-                .ignoresSafeArea()
+            // Gradient background
+            LinearGradient(
+                colors: [
+                    Color.appBackground,
+                    Color.appBackground,
+                    Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.05)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 20) {
-                    // BPM Display
-                    VStack(spacing: 10) {
-                        Text("TEMPO")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(Color.appSubtitle)
+                VStack(spacing: 32) {
+                    // BPM Display with play button inside
+                    VStack(spacing: 16) {
+                        HStack(spacing: 12) {
+                            Text("TEMPO")
+                                .font(.system(size: 14, weight: .semibold))
+                                .tracking(2)
+                                .foregroundColor(Color.appSubtitle)
 
-                        HStack(spacing: 5) {
                             Text(metronome.bpm)
-                                .font(.system(size: 80, weight: .bold))
+                                .font(.system(size: 24, weight: .bold, design: .rounded))
                                 .foregroundColor(Color.appText)
 
                             Text("BPM")
-                                .font(.title3)
-                                .fontWeight(.medium)
-                                .foregroundColor(Color.appSubtitle)
-                        }
-                    }
-
-                    // Beat indicator
-                    BeatIndicatorView(
-                        currentBeat: metronome.currentBeat,
-                        totalBeats: metronome.timeSignature.beatsPerMeasure,
-                        isPlaying: metronome.isPlaying
-                    )
-                    .frame(height: 60)
-                    .padding(.horizontal)
-
-                    // Tempo slider
-                    VStack(spacing: 16) {
-                        HStack {
-                            Text("40")
-                                .font(.caption)
+                                .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(Color.appSubtitle)
 
                             Spacer()
-
-                            Text("240")
-                                .font(.caption)
-                                .foregroundColor(Color.appSubtitle)
                         }
+                        .padding(.horizontal, 24)
 
-                        Slider(
-                            value: $metronome.tempo,
-                            in: 40...240,
-                            step: 1,
-                            onEditingChanged: { editing in
-                                metronome.handleTempoEditingChange(isEditing: editing)
+                        ZStack {
+                            // Animated circular progress
+                            Circle()
+                                .stroke(Color.appMantle, lineWidth: 8)
+                                .frame(width: 200, height: 200)
+
+                            Circle()
+                                .trim(from: 0, to: CGFloat((metronome.tempo - 40) / 200))
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [
+                                            Color(red: 0.91, green: 0.55, blue: 0.56),
+                                            Color(red: 0.98, green: 0.75, blue: 0.76)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    style: StrokeStyle(lineWidth: 8, lineCap: .round)
+                                )
+                                .frame(width: 200, height: 200)
+                                .rotationEffect(.degrees(-90))
+                                .animation(.spring(response: 0.5), value: metronome.tempo)
+
+                            // Play button inside circle
+                            Button(action: { metronome.togglePlay() }) {
+                                ZStack {
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [
+                                                    Color(red: 0.91, green: 0.55, blue: 0.56),
+                                                    Color(red: 0.85, green: 0.45, blue: 0.46)
+                                                ],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .frame(width: 88, height: 88)
+
+                                    Image(systemName: metronome.isPlaying ? "pause.fill" : "play.fill")
+                                        .font(.system(size: 36, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .offset(x: metronome.isPlaying ? 0 : 3)
+                                }
+                                .shadow(
+                                    color: Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.5),
+                                    radius: 20,
+                                    y: 8
+                                )
                             }
-                        )
-                            .accentColor(Color(red: 0.91, green: 0.55, blue: 0.56))
+                            .buttonStyle(ScaleButtonStyle())
+                        }
+                        .padding(.vertical, 20)
                     }
 
-                    // Time signature selector
-                    VStack(spacing: 12) {
-                        Text("TIME SIGNATURE")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                    // Tempo slider with enhanced design
+                    VStack(spacing: 20) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("ADJUST TEMPO")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .tracking(2)
+                                    .foregroundColor(Color.appSubtitle)
+
+                                Text("Slide to change BPM")
+                                    .font(.caption)
+                                    .foregroundColor(Color.appSubtitle.opacity(0.6))
+                            }
+
+                            Spacer()
+                        }
+
+                        HStack(spacing: 20) {
+                            Text("40")
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                .foregroundColor(Color.appSubtitle)
+                                .frame(width: 32)
+
+                            Slider(
+                                value: $metronome.tempo,
+                                in: 40...240,
+                                step: 1,
+                                onEditingChanged: { editing in
+                                    metronome.handleTempoEditingChange(isEditing: editing)
+                                }
+                            )
+                            .accentColor(Color(red: 0.91, green: 0.55, blue: 0.56))
+
+                            Text("240")
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                .foregroundColor(Color.appSubtitle)
+                                .frame(width: 32)
+                        }
+                    }
+                    .padding(20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.appMantle)
+                            .shadow(color: Color.black.opacity(0.1), radius: 10, y: 5)
+                    )
+                    .padding(.horizontal, 24)
+
+                    // Beat indicator with new design
+                    VStack(spacing: 16) {
+                        Text("BEAT")
+                            .font(.system(size: 12, weight: .semibold))
+                            .tracking(2)
                             .foregroundColor(Color.appSubtitle)
 
-                        LazyVGrid(columns: timeSignatureColumns, alignment: .center, spacing: 12) {
+                        BeatIndicatorView(
+                            currentBeat: metronome.currentBeat,
+                            totalBeats: metronome.timeSignature.beatsPerMeasure,
+                            isPlaying: metronome.isPlaying
+                        )
+                        .frame(height: 80)
+                        .padding(.horizontal)
+                    }
+                    .padding(.vertical, 20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 24)
+                            .fill(Color.appMantle)
+                            .shadow(color: Color.black.opacity(0.1), radius: 10, y: 5)
+                    )
+                    .padding(.horizontal, 24)
+
+                    // Time signature selector with card design
+                    VStack(spacing: 16) {
+                        HStack {
+                            Text("TIME SIGNATURE")
+                                .font(.system(size: 12, weight: .semibold))
+                                .tracking(2)
+                                .foregroundColor(Color.appSubtitle)
+
+                            Spacer()
+                        }
+
+                        LazyVGrid(columns: timeSignatureColumns, alignment: .center, spacing: 14) {
                             ForEach(TimeSignature.allCases) { signature in
                                 Button(action: {
                                     metronome.changeTimeSignature(to: signature)
                                 }) {
-                                    Text(signature.rawValue)
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .foregroundColor(
-                                            metronome.timeSignature == signature
-                                                ? Color.white : Color.appText
-                                        )
-                                        .frame(width: 70, height: 50)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .fill(
-                                                    metronome.timeSignature == signature
-                                                        ? Color(red: 0.91, green: 0.55, blue: 0.56)
-                                                        : Color.appMantle
-                                                )
-                                        )
+                                    VStack(spacing: 8) {
+                                        Text(signature.rawValue)
+                                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                                            .foregroundColor(
+                                                metronome.timeSignature == signature
+                                                    ? Color.white : Color.appText
+                                            )
+
+                                        if metronome.timeSignature == signature {
+                                            Circle()
+                                                .fill(Color.white)
+                                                .frame(width: 4, height: 4)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 70)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(
+                                                metronome.timeSignature == signature
+                                                    ? LinearGradient(
+                                                        colors: [
+                                                            Color(red: 0.91, green: 0.55, blue: 0.56),
+                                                            Color(red: 0.85, green: 0.45, blue: 0.46)
+                                                        ],
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
+                                                    : LinearGradient(
+                                                        colors: [Color.appSurface2, Color.appSurface2],
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
+                                            )
+                                            .shadow(
+                                                color: metronome.timeSignature == signature
+                                                    ? Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.4)
+                                                    : Color.clear,
+                                                radius: 8,
+                                                y: 4
+                                            )
+                                    )
                                 }
+                                .buttonStyle(ScaleButtonStyle())
                             }
                         }
-                        .padding(.horizontal, 12)
                     }
-                }
-                .padding(.top, 30)
-                .padding(.horizontal, 32)
-                .padding(.bottom, 140)
-            }
-        }
-        .overlay(alignment: .bottom) {
-            Button(action: { metronome.togglePlay() }) {
-                Image(systemName: metronome.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.system(size: 36))
-                    .foregroundColor(.white)
-                    .frame(width: 88, height: 88)
+                    .padding(20)
                     .background(
-                        Circle()
-                            .fill(Color(red: 0.91, green: 0.55, blue: 0.56))
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.appMantle)
+                            .shadow(color: Color.black.opacity(0.1), radius: 10, y: 5)
                     )
-                    .shadow(
-                        color: Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.35),
-                        radius: 16,
-                        y: 6
-                    )
+                    .padding(.horizontal, 24)
+                }
+                .padding(.top, 40)
+                .padding(.bottom, 200)
             }
-            .padding(.bottom, 140)
         }
         .navigationBarHidden(true)
         .onDisappear {
@@ -296,23 +416,23 @@ struct BeatIndicatorView: View {
         case 0...4:
             let count = max(totalBeats, 1)
             return (
-                Array(repeating: GridItem(.flexible(), spacing: 16), count: count),
-                50,
-                16
+                Array(repeating: GridItem(.flexible(), spacing: 18), count: count),
+                56,
+                18
             )
         case 5...8:
             let columns = Int(ceil(Double(totalBeats) / 2.0))
             return (
-                Array(repeating: GridItem(.flexible(), spacing: 12), count: columns),
-                40,
-                12
+                Array(repeating: GridItem(.flexible(), spacing: 14), count: columns),
+                46,
+                14
             )
         default:
             let columns = Int(ceil(Double(totalBeats) / 2.0))
             return (
-                Array(repeating: GridItem(.flexible(), spacing: 10), count: max(columns, 1)),
-                34,
-                10
+                Array(repeating: GridItem(.flexible(), spacing: 12), count: max(columns, 1)),
+                38,
+                12
             )
         }
     }
@@ -322,24 +442,78 @@ struct BeatIndicatorView: View {
 
         LazyVGrid(columns: layout.columns, alignment: .center, spacing: layout.spacing) {
             ForEach(0..<totalBeats, id: \.self) { beat in
-                Circle()
-                    .fill(
-                        isPlaying && beat == currentBeat
-                            ? Color(red: 0.91, green: 0.55, blue: 0.56)
-                            : Color.appMantle
-                    )
-                    .frame(width: layout.circleSize, height: layout.circleSize)
-                    .overlay(
+                ZStack {
+                    // Background circle
+                    Circle()
+                        .fill(
+                            isPlaying && beat == currentBeat
+                                ? LinearGradient(
+                                    colors: [
+                                        Color(red: 0.91, green: 0.55, blue: 0.56),
+                                        Color(red: 0.85, green: 0.45, blue: 0.46)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                                : LinearGradient(
+                                    colors: [Color.appSurface2, Color.appSurface2],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                        )
+                        .frame(width: layout.circleSize, height: layout.circleSize)
+
+                    // Accent ring for first beat
+                    if beat == 0 {
                         Circle()
                             .stroke(
-                                beat == 0
-                                    ? Color(red: 0.91, green: 0.55, blue: 0.56) : Color.appSubtitle
-                                        .opacity(0.3),
+                                Color(red: 0.91, green: 0.55, blue: 0.56),
+                                lineWidth: 3
+                            )
+                            .frame(
+                                width: layout.circleSize + 4,
+                                height: layout.circleSize + 4
+                            )
+                            .opacity(isPlaying && beat == currentBeat ? 0 : 0.6)
+                    }
+
+                    // Pulse effect when active
+                    if isPlaying && beat == currentBeat {
+                        Circle()
+                            .stroke(
+                                Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.6),
                                 lineWidth: 2
                             )
-                    )
-                    .scaleEffect(isPlaying && beat == currentBeat ? 1.2 : 1.0)
-                    .animation(.spring(response: 0.2, dampingFraction: 0.6), value: currentBeat)
+                            .frame(
+                                width: layout.circleSize + 12,
+                                height: layout.circleSize + 12
+                            )
+                            .scaleEffect(1.2)
+                            .opacity(0)
+                            .animation(
+                                Animation.easeOut(duration: 0.4),
+                                value: currentBeat
+                            )
+                    }
+
+                    // Beat number
+                    Text("\(beat + 1)")
+                        .font(.system(size: layout.circleSize * 0.35, weight: .bold, design: .rounded))
+                        .foregroundColor(
+                            isPlaying && beat == currentBeat
+                                ? Color.white
+                                : Color.appSubtitle
+                        )
+                }
+                .scaleEffect(isPlaying && beat == currentBeat ? 1.15 : 1.0)
+                .shadow(
+                    color: isPlaying && beat == currentBeat
+                        ? Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.5)
+                        : Color.clear,
+                    radius: 12,
+                    y: 4
+                )
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentBeat)
             }
         }
     }
