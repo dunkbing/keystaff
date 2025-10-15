@@ -18,27 +18,39 @@ struct PracticeView: View {
 
     var body: some View {
         ZStack {
-            Color.appBackground
-                .ignoresSafeArea()
+            // Gradient background
+            LinearGradient(
+                colors: [
+                    Color.appBackground,
+                    Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.03)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Header with Menu button
                 HStack {
                     Button(action: { showMenu = true }) {
-                        Text("Menu")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .foregroundColor(Color(red: 0.91, green: 0.55, blue: 0.56))
+                        HStack(spacing: 8) {
+                            Image(systemName: "line.3.horizontal")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("Menu")
+                                .font(.system(size: 18, weight: .semibold))
+                        }
+                        .foregroundColor(Color(red: 0.91, green: 0.55, blue: 0.56))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.appMantle)
+                        )
                     }
                     Spacer()
                 }
                 .padding(.horizontal)
                 .padding(.top, 10)
-
-                Rectangle()
-                    .fill(Color(red: 0.91, green: 0.55, blue: 0.56))
-                    .frame(height: 4)
-                    .padding(.top, 8)
 
                 if gameManager.isGameActive {
                     HStack {
@@ -46,30 +58,47 @@ struct PracticeView: View {
                         Button(action: {
                             gameManager.stopGame()
                         }) {
-                            Text("End Session")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(Color.appAccent)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.appMantle.opacity(0.6))
-                                )
+                            HStack(spacing: 6) {
+                                Image(systemName: "stop.fill")
+                                    .font(.system(size: 12))
+                                Text("End Session")
+                                    .font(.system(size: 14, weight: .semibold))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(
+                                Capsule()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(red: 0.91, green: 0.55, blue: 0.56),
+                                                Color(red: 0.85, green: 0.45, blue: 0.46)
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .shadow(
+                                        color: Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.3),
+                                        radius: 8,
+                                        y: 4
+                                    )
+                            )
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.top, 12)
+                    .padding(.top, 16)
                 }
 
-                // Stats row
-                HStack(spacing: 40) {
-                    StatView(title: "Time", value: gameManager.formattedTime)
-                    StatView(title: "Score", value: "\(gameManager.score)")
-                    StatView(title: "Accuracy", value: gameManager.accuracy)
+                // Stats row with enhanced cards
+                HStack(spacing: 16) {
+                    EnhancedStatView(title: "Time", value: gameManager.formattedTime, icon: "clock.fill")
+                    EnhancedStatView(title: "Score", value: "\(gameManager.score)", icon: "star.fill")
+                    EnhancedStatView(title: "Accuracy", value: gameManager.accuracy, icon: "target")
                 }
-                .padding(.horizontal)
-                .padding(.top, 20)
+                .padding(.horizontal, 20)
+                .padding(.top, 24)
 
                 Spacer()
                     .frame(minHeight: 20, maxHeight: 40)
@@ -88,27 +117,62 @@ struct PracticeView: View {
                 Spacer()
                     .frame(minHeight: 10, maxHeight: 30)
 
-                // Input mode toggle
-                HStack(spacing: 16) {
+                // Input mode toggle with enhanced design
+                HStack(spacing: 0) {
                     ForEach(InputMode.allCases, id: \.self) { mode in
-                        Button(action: { inputMode = mode }) {
-                            Text(mode.rawValue)
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(
-                                    inputMode == mode ? Color.appText : Color.appSubtitle)
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 10)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(
-                                            inputMode == mode
-                                                ? Color.appMantle : Color.clear
-                                        )
-                                )
+                        Button(action: {
+                            withAnimation(.spring(response: 0.3)) {
+                                inputMode = mode
+                            }
+                        }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: mode == .musicNotes ? "music.note" : "pianokeys")
+                                    .font(.system(size: 14, weight: .semibold))
+                                Text(mode.rawValue)
+                                    .font(.system(size: 14, weight: .semibold))
+                            }
+                            .foregroundColor(
+                                inputMode == mode ? Color.white : Color.appSubtitle
+                            )
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(
+                                        inputMode == mode
+                                            ? LinearGradient(
+                                                colors: [
+                                                    Color(red: 0.91, green: 0.55, blue: 0.56),
+                                                    Color(red: 0.85, green: 0.45, blue: 0.46)
+                                                ],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                            : LinearGradient(
+                                                colors: [Color.clear, Color.clear],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                    )
+                                    .shadow(
+                                        color: inputMode == mode
+                                            ? Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.3)
+                                            : Color.clear,
+                                        radius: 8,
+                                        y: 4
+                                    )
+                            )
                         }
+                        .buttonStyle(ScaleButtonStyle())
                     }
                 }
-                .padding(.bottom, 12)
+                .padding(4)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.appMantle)
+                )
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
 
                 // Input area
                 Group {
@@ -130,7 +194,7 @@ struct PracticeView: View {
                         .padding(.horizontal, 8)
                     }
                 }
-                .padding(.bottom, 100)
+                .padding(.bottom, 140)
             }
 
             // Feedback overlay
@@ -188,6 +252,46 @@ struct StatView: View {
                 .font(.system(size: 32, weight: .bold))
                 .foregroundColor(Color.appText)
         }
+    }
+}
+
+struct EnhancedStatView: View {
+    let title: LocalizedStringKey
+    let value: String
+    let icon: String
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(Color(red: 0.91, green: 0.55, blue: 0.56))
+                .frame(width: 32, height: 32)
+                .background(
+                    Circle()
+                        .fill(Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.15))
+                )
+
+            VStack(spacing: 2) {
+                Text(value)
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundColor(Color.appText)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+
+                Text(title)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(Color.appSubtitle)
+                    .textCase(.uppercase)
+//                    .tracking(0.5)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.appMantle)
+                .shadow(color: Color.black.opacity(0.08), radius: 8, y: 4)
+        )
     }
 }
 
@@ -299,7 +403,7 @@ struct SessionSummaryOverlay: View {
             Color.appBackground
                 .ignoresSafeArea()
 
-            VStack(spacing: 24) {
+            VStack(spacing: 20) {
                 if let summary = displayedResult {
                     Text("Session Summary")
                         .font(.title2)
@@ -335,9 +439,9 @@ struct SessionSummaryOverlay: View {
                             .foregroundColor(Color.appSubtitle)
 
                         SimpleLineChartView(results: recentHistory)
-                            .frame(height: 160)
+                            .frame(height: 140)
                             .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
+                            .padding(.vertical, 8)
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
                                     .fill(Color.appMantle)
@@ -347,30 +451,58 @@ struct SessionSummaryOverlay: View {
                 }
 
                 Button(action: onRestart) {
-                    Text(displayedResult == nil ? "Start Practice" : "Start New Session")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 40)
-                        .padding(.vertical, 16)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(red: 0.91, green: 0.55, blue: 0.56))
-                        )
+                    HStack(spacing: 8) {
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text(displayedResult == nil ? "Start Practice" : "Start New Session")
+                            .font(.system(size: 18, weight: .semibold))
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 18)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 0.91, green: 0.55, blue: 0.56),
+                                        Color(red: 0.85, green: 0.45, blue: 0.46)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .shadow(
+                                color: Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.4),
+                                radius: 12,
+                                y: 6
+                            )
+                    )
                 }
+                .buttonStyle(ScaleButtonStyle())
+                .padding(.horizontal)
 
                 Button(action: onShowOptions) {
-                    Text("Options")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(Color.appAccent)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 10)
-                        .background(
-                            Capsule()
-                                .fill(Color.appMantle.opacity(0.6))
-                        )
+                    HStack(spacing: 6) {
+                        Image(systemName: "slider.horizontal.3")
+                            .font(.system(size: 14))
+                        Text("Options")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    .foregroundColor(Color.appText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.appMantle)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .stroke(Color.appSubtitle.opacity(0.2), lineWidth: 1)
+                            )
+                    )
                 }
+                .buttonStyle(ScaleButtonStyle())
+                .padding(.horizontal)
 
                 if hasHistory {
                     Button(action: {

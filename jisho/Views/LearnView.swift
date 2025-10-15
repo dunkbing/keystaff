@@ -11,23 +11,51 @@ import TikimUI
 struct LearnView: View {
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: 28) {
+                // Header
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Learn")
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundColor(Color.appText)
+                    Text("Master music notation with interactive references")
+                        .font(.subheadline)
+                        .foregroundColor(Color.appSubtitle)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20)
+
                 // Reference cards
-                ForEach(Clef.allCases) { clef in
-                    NavigationLink(destination: ClefReferenceView(clef: clef)) {
-                        ReferenceCard(
-                            title: clef.referenceTitleKey,
-                            icon: "music.note"
-                        )
+                VStack(spacing: 16) {
+                    ForEach(Clef.allCases) { clef in
+                        NavigationLink(destination: ClefReferenceView(clef: clef)) {
+                            EnhancedReferenceCard(
+                                title: clef.referenceTitleKey,
+                                icon: "music.note",
+                                description: "Learn the \(clef.rawValue) clef notation"
+                            )
+                        }
                     }
                 }
+                .padding(.horizontal, 20)
 
                 // Info section
-                VStack(spacing: 12) {
-                    Text("Music Note Basics")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color.appText)
+                VStack(spacing: 16) {
+                    HStack {
+                        Image(systemName: "book.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(Color(red: 0.91, green: 0.55, blue: 0.56))
+                            .frame(width: 36, height: 36)
+                            .background(
+                                Circle()
+                                    .fill(Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.15))
+                            )
+
+                        Text("Music Note Basics")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(Color.appText)
+
+                        Spacer()
+                    }
 
                     Text(
                         """
@@ -39,20 +67,33 @@ struct LearnView: View {
                     .font(.body)
                     .foregroundColor(Color.appText)
                     .multilineTextAlignment(.leading)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.appMantle)
-                    )
+                    .lineSpacing(4)
                 }
-                .padding(.top, 20)
+                .padding(20)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.appMantle)
+                        .shadow(color: Color.black.opacity(0.08), radius: 10, y: 5)
+                )
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
 
                 Spacer()
                     .frame(height: 60)
             }
-            .padding()
+            .padding(.vertical)
         }
-        .background(Color.appBackground.ignoresSafeArea())
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.appBackground,
+                    Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.03)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+        )
         .navigationTitle("Learn")
         .navigationBarTitleDisplayMode(.large)
     }
@@ -99,6 +140,66 @@ struct ReferenceCard: View {
                 )
         )
         .shadow(color: Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.3), radius: 10, y: 5)
+    }
+}
+
+struct EnhancedReferenceCard: View {
+    let title: LocalizedStringKey
+    let icon: String
+    let description: String
+
+    var body: some View {
+        HStack(spacing: 16) {
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.91, green: 0.55, blue: 0.56),
+                                Color(red: 0.85, green: 0.45, blue: 0.46)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 56, height: 56)
+
+                Image(systemName: icon)
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundColor(.white)
+            }
+            .shadow(
+                color: Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.4),
+                radius: 8,
+                y: 4
+            )
+
+            // Content
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(Color.appText)
+
+                Text(description)
+                    .font(.system(size: 14))
+                    .foregroundColor(Color.appSubtitle)
+                    .lineLimit(2)
+            }
+
+            Spacer()
+
+            // Arrow
+            Image(systemName: "chevron.right")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(Color.appSubtitle)
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.appMantle)
+                .shadow(color: Color.black.opacity(0.08), radius: 10, y: 5)
+        )
     }
 }
 

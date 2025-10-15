@@ -14,16 +14,20 @@ struct SettingsTabView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
+            VStack(spacing: 28) {
                 // Header
                 HStack {
-                    Text("Settings")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color.appText)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Settings")
+                            .font(.system(size: 34, weight: .bold))
+                            .foregroundColor(Color.appText)
+                        Text("Customize your experience")
+                            .font(.subheadline)
+                            .foregroundColor(Color.appSubtitle)
+                    }
                     Spacer()
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
                 .padding(.top, 10)
 
                 AppearanceSetting()
@@ -31,40 +35,77 @@ struct SettingsTabView: View {
 
                 // About Section
                 SettingsSection(title: "About", icon: "info.circle") {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 0) {
                         Button(action: {
                             showingAbout = true
                         }) {
-                            HStack {
+                            HStack(spacing: 16) {
+                                Image(systemName: "music.note")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(Color(red: 0.91, green: 0.55, blue: 0.56))
+                                    .frame(width: 36)
+
                                 Text("About KeyStaff")
+                                    .font(.system(size: 17, weight: .medium))
                                     .foregroundColor(Color.appText)
+
                                 Spacer()
+
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 14))
+                                    .font(.system(size: 14, weight: .semibold))
                                     .foregroundColor(Color.appSubtitle)
                             }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
                         }
                         .buttonStyle(PlainButtonStyle())
 
-                        HStack {
+                        Divider()
+                            .padding(.leading, 56)
+
+                        HStack(spacing: 16) {
+                            Image(systemName: "app.badge")
+                                .font(.system(size: 20))
+                                .foregroundColor(Color(red: 0.91, green: 0.55, blue: 0.56))
+                                .frame(width: 36)
+
                             Text("Version")
+                                .font(.system(size: 17, weight: .medium))
                                 .foregroundColor(Color.appText)
+
                             Spacer()
+
                             Text("1.0.0")
+                                .font(.system(size: 17))
                                 .foregroundColor(Color.appSubtitle)
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 16)
+
+                        Divider()
+                            .padding(.leading, 56)
 
                         Link(destination: URL(string: "https://db99.dev")!) {
-                            HStack {
+                            HStack(spacing: 16) {
+                                Image(systemName: "person.circle")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(Color(red: 0.91, green: 0.55, blue: 0.56))
+                                    .frame(width: 36)
+
                                 Text("Follow developer")
+                                    .font(.system(size: 17, weight: .medium))
                                     .foregroundColor(Color.appAccent)
+
                                 Spacer()
-                                Image(systemName: "arrow.up.right.square")
+
+                                Image(systemName: "arrow.up.right")
+                                    .font(.system(size: 14, weight: .semibold))
                                     .foregroundColor(Color.appAccent)
                             }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
                         }
                     }
-                    .padding()
                 }
 
                 Spacer()
@@ -72,7 +113,17 @@ struct SettingsTabView: View {
             }
             .padding()
         }
-        .background(Color.appBackground.ignoresSafeArea())
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.appBackground,
+                    Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.03)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+        )
         .sheet(isPresented: $showingAbout) {
             AboutView()
         }
@@ -92,28 +143,27 @@ struct SettingsSection<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
+            HStack(spacing: 10) {
                 Image(systemName: icon)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color.appAccent)
-                    .padding(8)
-                    .background(Color.appAccent.opacity(0.1))
-                    .clipShape(Circle())
+                    .foregroundColor(Color(red: 0.91, green: 0.55, blue: 0.56))
+                    .frame(width: 32, height: 32)
+                    .background(
+                        Circle()
+                            .fill(Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.15))
+                    )
 
                 Text(title)
-                    .font(.headline)
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundColor(Color.appText)
             }
-            .padding(.horizontal)
+            .padding(.horizontal, 20)
 
             content
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: 20)
                         .fill(Color.appMantle)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.appAccent.opacity(0.15), lineWidth: 1)
+                        .shadow(color: Color.black.opacity(0.08), radius: 10, y: 5)
                 )
         }
         .padding(.horizontal)

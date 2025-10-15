@@ -200,27 +200,13 @@ struct MetronomeView: View {
                         .padding(.horizontal, 24)
 
                         ZStack {
-                            // Animated circular progress
-                            Circle()
-                                .stroke(Color.appMantle, lineWidth: 8)
-                                .frame(width: 200, height: 200)
-
-                            Circle()
-                                .trim(from: 0, to: CGFloat((metronome.tempo - 40) / 200))
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [
-                                            Color(red: 0.91, green: 0.55, blue: 0.56),
-                                            Color(red: 0.98, green: 0.75, blue: 0.76)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    style: StrokeStyle(lineWidth: 8, lineCap: .round)
-                                )
-                                .frame(width: 200, height: 200)
-                                .rotationEffect(.degrees(-90))
-                                .animation(.spring(response: 0.5), value: metronome.tempo)
+                            // Beat indicators around the circle
+                            CircularBeatIndicatorView(
+                                currentBeat: metronome.currentBeat,
+                                totalBeats: metronome.timeSignature.beatsPerMeasure,
+                                isPlaying: metronome.isPlaying
+                            )
+                            .frame(width: 240, height: 240)
 
                             // Play button inside circle
                             Button(action: { metronome.togglePlay() }) {
@@ -296,29 +282,6 @@ struct MetronomeView: View {
                     .padding(20)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.appMantle)
-                            .shadow(color: Color.black.opacity(0.1), radius: 10, y: 5)
-                    )
-                    .padding(.horizontal, 24)
-
-                    // Beat indicator with new design
-                    VStack(spacing: 16) {
-                        Text("BEAT")
-                            .font(.system(size: 12, weight: .semibold))
-                            .tracking(2)
-                            .foregroundColor(Color.appSubtitle)
-
-                        BeatIndicatorView(
-                            currentBeat: metronome.currentBeat,
-                            totalBeats: metronome.timeSignature.beatsPerMeasure,
-                            isPlaying: metronome.isPlaying
-                        )
-                        .frame(height: 80)
-                        .padding(.horizontal)
-                    }
-                    .padding(.vertical, 20)
-                    .background(
-                        RoundedRectangle(cornerRadius: 24)
                             .fill(Color.appMantle)
                             .shadow(color: Color.black.opacity(0.1), radius: 10, y: 5)
                     )
@@ -512,6 +475,89 @@ struct BeatIndicatorView: View {
                         : Color.clear,
                     radius: 12,
                     y: 4
+                )
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentBeat)
+            }
+        }
+    }
+}
+
+struct CircularBeatIndicatorView: View {
+    let currentBeat: Int
+    let totalBeats: Int
+    let isPlaying: Bool
+
+    var body: some View {
+        ZStack {
+            ForEach(0..<totalBeats, id: \.self) { beat in
+                let angle = (Double(beat) / Double(totalBeats)) * 360.0 - 90.0
+                let isActive = isPlaying && beat == currentBeat
+                let isFirst = beat == 0
+
+                ZStack {
+                    // Beat circle
+                    Circle()
+                        .fill(
+                            isActive
+                                ? LinearGradient(
+                                    colors: [
+                                        Color(red: 0.91, green: 0.55, blue: 0.56),
+                                        Color(red: 0.85, green: 0.45, blue: 0.46)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                                : LinearGradient(
+                                    colors: [Color.appMantle, Color.appMantle],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                        )
+                        .frame(width: isActive ? 48 : 40, height: isActive ? 48 : 40)
+
+                    // Accent ring for first beat
+                    if isFirst && !isActive {
+                        Circle()
+                            .stroke(
+                                Color(red: 0.91, green: 0.55, blue: 0.56),
+                                lineWidth: 2.5
+                            )
+                            .frame(width: 44, height: 44)
+                    }
+
+                    // Pulse effect when active
+                    if isActive {
+                        Circle()
+                            .stroke(
+                                Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.6),
+                                lineWidth: 2
+                            )
+                            .frame(width: 60, height: 60)
+                            .scaleEffect(1.3)
+                            .opacity(0)
+                            .animation(
+                                Animation.easeOut(duration: 0.4),
+                                value: currentBeat
+                            )
+                    }
+
+                    // Beat number
+                    Text("\(beat + 1)")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundColor(
+                            isActive ? Color.white : Color.appText
+                        )
+                }
+                .shadow(
+                    color: isActive
+                        ? Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.5)
+                        : Color.clear,
+                    radius: 12,
+                    y: 4
+                )
+                .offset(
+                    x: cos(angle * .pi / 180) * 100,
+                    y: sin(angle * .pi / 180) * 100
                 )
                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentBeat)
             }
