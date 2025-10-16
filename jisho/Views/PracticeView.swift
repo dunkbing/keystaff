@@ -30,27 +30,29 @@ struct PracticeView: View {
             .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Header with Menu button
-                HStack {
-                    Button(action: { showMenu = true }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "line.3.horizontal")
-                                .font(.system(size: 16, weight: .semibold))
-                            Text("Menu")
-                                .font(.system(size: 18, weight: .semibold))
+                // Header with Menu button (only when game is not active)
+                if !gameManager.isGameActive {
+                    HStack {
+                        Button(action: { showMenu = true }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "line.3.horizontal")
+                                    .font(.system(size: 16, weight: .semibold))
+                                Text("Menu")
+                                    .font(.system(size: 18, weight: .semibold))
+                            }
+                            .foregroundColor(Color(red: 0.91, green: 0.55, blue: 0.56))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.appMantle)
+                            )
                         }
-                        .foregroundColor(Color(red: 0.91, green: 0.55, blue: 0.56))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.appMantle)
-                        )
+                        Spacer()
                     }
-                    Spacer()
+                    .padding(.horizontal)
+                    .padding(.top, 10)
                 }
-                .padding(.horizontal)
-                .padding(.top, 10)
 
                 if gameManager.isGameActive {
                     HStack {
@@ -399,7 +401,7 @@ struct SessionSummaryOverlay: View {
     private var hasHistory: Bool { !recentHistory.isEmpty }
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             Color.appBackground
                 .ignoresSafeArea()
 
@@ -520,7 +522,9 @@ struct SessionSummaryOverlay: View {
                     }
                 }
             }
-            .padding(32)
+            .padding(.horizontal, 32)
+            .padding(.top, 80)
+            .padding(.bottom, 32)
         }
     }
 
