@@ -16,6 +16,37 @@ struct PracticeView: View {
     @State private var showOptions = false
     @State private var showMenu = false
 
+    private let noteInputModes: [InputMode] = [.musicNotes, .pianoKeys]
+
+    private var staffNotes: [MusicNote] {
+        if gameManager.currentMode == .chordIdentification {
+            return gameManager.currentChordNotes
+        } else if let note = gameManager.currentNote {
+            return [note]
+        } else {
+            return []
+        }
+    }
+
+    private var shouldShowStaffNotes: Bool {
+        gameManager.isGameActive && !staffNotes.isEmpty
+    }
+
+    private var inputAreaBottomPadding: CGFloat {
+        gameManager.currentMode == .chordIdentification ? 120 : 140
+    }
+
+    private func iconName(for mode: InputMode) -> String {
+        switch mode {
+        case .musicNotes:
+            return "music.note"
+        case .pianoKeys:
+            return "pianokeys"
+        case .chordIdentification:
+            return "music.note.list"
+        }
+    }
+
     var body: some View {
         ZStack {
             // Gradient background
@@ -105,11 +136,11 @@ struct PracticeView: View {
                 Spacer()
                     .frame(minHeight: 20, maxHeight: 40)
 
-                // Staff with note
+                // Staff with note/chord content
                 StaffView(
-                    note: gameManager.currentNote,
+                    notes: staffNotes,
                     clef: gameManager.currentClef,
-                    showNote: gameManager.isGameActive
+                    showNotes: shouldShowStaffNotes
                 )
                 .padding(.horizontal)
                 .padding(.vertical, 20)
@@ -120,65 +151,71 @@ struct PracticeView: View {
                     .frame(minHeight: 10, maxHeight: 30)
 
                 // Input mode toggle with enhanced design
-                HStack(spacing: 0) {
-                    ForEach(InputMode.allCases, id: \.self) { mode in
-                        Button(action: {
-                            withAnimation(.spring(response: 0.3)) {
-                                inputMode = mode
+                if gameManager.currentMode != .chordIdentification || !gameManager.isGameActive {
+                    HStack(spacing: 0) {
+                        ForEach(noteInputModes, id: \.self) { mode in
+                            Button(action: {
+                                withAnimation(.spring(response: 0.3)) {
+                                    inputMode = mode
+                                }
+                            }) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: iconName(for: mode))
+                                        .font(.system(size: 14, weight: .semibold))
+                                    Text(mode.rawValue)
+                                        .font(.system(size: 14, weight: .semibold))
+                                }
+                                .foregroundColor(
+                                    inputMode == mode ? Color.white : Color.appSubtitle
+                                )
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(
+                                            inputMode == mode
+                                                ? LinearGradient(
+                                                    colors: [
+                                                        Color(red: 0.91, green: 0.55, blue: 0.56),
+                                                        Color(red: 0.85, green: 0.45, blue: 0.46)
+                                                    ],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                                : LinearGradient(
+                                                    colors: [Color.clear, Color.clear],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                        )
+                                        .shadow(
+                                            color: inputMode == mode
+                                                ? Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.3)
+                                                : Color.clear,
+                                            radius: 8,
+                                            y: 4
+                                        )
+                                )
                             }
-                        }) {
-                            HStack(spacing: 6) {
-                                Image(systemName: mode == .musicNotes ? "music.note" : "pianokeys")
-                                    .font(.system(size: 14, weight: .semibold))
-                                Text(mode.rawValue)
-                                    .font(.system(size: 14, weight: .semibold))
-                            }
-                            .foregroundColor(
-                                inputMode == mode ? Color.white : Color.appSubtitle
-                            )
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(
-                                        inputMode == mode
-                                            ? LinearGradient(
-                                                colors: [
-                                                    Color(red: 0.91, green: 0.55, blue: 0.56),
-                                                    Color(red: 0.85, green: 0.45, blue: 0.46)
-                                                ],
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
-                                            )
-                                            : LinearGradient(
-                                                colors: [Color.clear, Color.clear],
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
-                                            )
-                                    )
-                                    .shadow(
-                                        color: inputMode == mode
-                                            ? Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.3)
-                                            : Color.clear,
-                                        radius: 8,
-                                        y: 4
-                                    )
-                            )
+                            .buttonStyle(ScaleButtonStyle())
                         }
-                        .buttonStyle(ScaleButtonStyle())
                     }
+                    .padding(4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.appMantle)
+                    )
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 16)
+                } else {
+                    Spacer()
+                        .frame(height: 16)
                 }
-                .padding(4)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.appMantle)
-                )
-                .padding(.horizontal, 20)
-                .padding(.bottom, 16)
 
                 // Input area
                 Group {
-                    if inputMode == .musicNotes {
+                    switch gameManager.currentMode {
+                    case .musicNotes:
                         MusicNoteButtonsView(
                             includeAccidentals: settings.includeAccidentals
                         ) { note, accidental in
@@ -187,16 +224,26 @@ struct PracticeView: View {
                             }
                         }
                         .padding(.horizontal, 12)
-                    } else {
+
+                    case .pianoKeys:
                         PianoKeyboardView { note, accidental in
                             if gameManager.isGameActive {
                                 gameManager.checkAnswer(note, accidental: accidental)
                             }
                         }
                         .padding(.horizontal, 8)
+
+                    case .chordIdentification:
+                        ChordOptionsView(
+                            options: gameManager.chordAnswerOptions,
+                            isEnabled: gameManager.isGameActive && !gameManager.showFeedback
+                        ) { option in
+                            gameManager.checkChordAnswer(option)
+                        }
+                        .padding(.horizontal, 20)
                     }
                 }
-                .padding(.bottom, 140)
+                .padding(.bottom, inputAreaBottomPadding)
             }
 
             // Feedback overlay
@@ -211,8 +258,13 @@ struct PracticeView: View {
                 SessionSummaryOverlay(
                     result: gameManager.lastSessionResult,
                     history: resultStore.recentResults(),
-                    onRestart: {
-                        gameManager.startGame()
+                    onStartNoteSession: {
+                        gameManager.setMode(inputMode)
+                        gameManager.startGame(mode: inputMode)
+                    },
+                    onStartChordSession: {
+                        inputMode = .musicNotes
+                        gameManager.startGame(mode: .chordIdentification)
                     },
                     onClearHistory: {
                         gameManager.clearHistory()
@@ -227,15 +279,31 @@ struct PracticeView: View {
         .sheet(isPresented: $showMenu) {
             MenuView(
                 showOptions: $showOptions,
-                onStartGame: {
+                onStartNoteGame: {
                     showMenu = false
+                    gameManager.setMode(inputMode)
                     gameManager.resetGame()
+                },
+                onStartChordGame: {
+                    showMenu = false
+                    inputMode = .musicNotes
+                    gameManager.startGame(mode: .chordIdentification)
                 }
             )
         }
         .sheet(isPresented: $showOptions) {
             OptionsView()
                 .environmentObject(settings)
+        }
+        .onAppear {
+            if gameManager.currentMode != .chordIdentification {
+                gameManager.setMode(inputMode)
+            }
+        }
+        .onChange(of: inputMode) { newMode in
+            if gameManager.currentMode != .chordIdentification {
+                gameManager.setMode(newMode)
+            }
         }
         .navigationBarHidden(true)
     }
@@ -297,6 +365,79 @@ struct EnhancedStatView: View {
     }
 }
 
+struct ChordOptionsView: View {
+    let options: [String]
+    let isEnabled: Bool
+    let onSelect: (String) -> Void
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
+    private var optionGradient: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color(red: 0.91, green: 0.55, blue: 0.56),
+                Color(red: 0.85, green: 0.45, blue: 0.46)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    var body: some View {
+        LazyVGrid(columns: columns, spacing: 12) {
+            ForEach(0..<4, id: \.self) { index in
+                if options.indices.contains(index) {
+                    let option = options[index]
+
+                    Button {
+                        if isEnabled {
+                            onSelect(option)
+                        }
+                    } label: {
+                        Text(option)
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundColor(.white.opacity(isEnabled ? 1 : 0.7))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(optionGradient)
+                                    .opacity(isEnabled ? 1 : 0.4)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                            )
+                    }
+                    .disabled(!isEnabled)
+                    .buttonStyle(ScaleButtonStyle())
+                } else {
+                    PlaceholderChordOption()
+                }
+            }
+        }
+    }
+}
+
+struct PlaceholderChordOption: View {
+    var body: some View {
+        RoundedRectangle(cornerRadius: 16)
+            .fill(Color.appMantle)
+            .frame(maxWidth: .infinity, minHeight: 56, maxHeight: 56)
+            .overlay(
+                ProgressView()
+                    .progressViewStyle(
+                        CircularProgressViewStyle(tint: Color.appAccent.opacity(0.7))
+                    )
+            )
+    }
+}
+
 struct FeedbackOverlay: View {
     let isCorrect: Bool
 
@@ -317,18 +458,19 @@ struct MenuView: View {
     @Binding var showOptions: Bool
     @ObservedObject private var store = PracticeResultStore.shared
     @State private var showHistory = false
-    let onStartGame: () -> Void
+    let onStartNoteGame: () -> Void
+    let onStartChordGame: () -> Void
 
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
                 Button(action: {
                     presentationMode.wrappedValue.dismiss()
-                    onStartGame()
+                    onStartNoteGame()
                 }) {
                     HStack {
                         Image(systemName: "play.fill")
-                        Text("Start Practice")
+                        Text("Note Identification")
                     }
                     .font(.headline)
                     .foregroundColor(.white)
@@ -337,6 +479,28 @@ struct MenuView: View {
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color(red: 0.91, green: 0.55, blue: 0.56))
+                    )
+                }
+
+                Button(action: {
+                    presentationMode.wrappedValue.dismiss()
+                    onStartChordGame()
+                }) {
+                    HStack {
+                        Image(systemName: "music.note.list")
+                        Text("Chord Identification")
+                    }
+                    .font(.headline)
+                    .foregroundColor(Color.appAccent)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.appMantle)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.appAccent.opacity(0.2), lineWidth: 1)
+                            )
                     )
                 }
 
@@ -392,7 +556,8 @@ struct MenuView: View {
 struct SessionSummaryOverlay: View {
     let result: SessionResult?
     let history: [SessionResult]
-    let onRestart: () -> Void
+    let onStartNoteSession: () -> Void
+    let onStartChordSession: () -> Void
     let onClearHistory: () -> Void
     let onShowOptions: () -> Void
 
@@ -452,36 +617,59 @@ struct SessionSummaryOverlay: View {
                     .padding(.horizontal)
                 }
 
-                Button(action: onRestart) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "play.fill")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text(displayedResult == nil ? "Start Practice" : "Start New Session")
-                            .font(.system(size: 18, weight: .semibold))
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 18)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color(red: 0.91, green: 0.55, blue: 0.56),
-                                        Color(red: 0.85, green: 0.45, blue: 0.46)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
+                VStack(spacing: 14) {
+                    Button(action: onStartNoteSession) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "music.note")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("Note Identification")
+                                .font(.system(size: 18, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            Color(red: 0.91, green: 0.55, blue: 0.56),
+                                            Color(red: 0.85, green: 0.45, blue: 0.46)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
                                 )
-                            )
-                            .shadow(
-                                color: Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.4),
-                                radius: 12,
-                                y: 6
-                            )
-                    )
+                                .shadow(
+                                    color: Color(red: 0.91, green: 0.55, blue: 0.56).opacity(0.4),
+                                    radius: 12,
+                                    y: 6
+                                )
+                        )
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+
+                    Button(action: onStartChordSession) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "music.note.list")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("Chord Identification")
+                                .font(.system(size: 18, weight: .semibold))
+                        }
+                        .foregroundColor(Color.appAccent)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color.appMantle)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.appAccent.opacity(0.2), lineWidth: 1)
+                                )
+                        )
+                    }
+                    .buttonStyle(ScaleButtonStyle())
                 }
-                .buttonStyle(ScaleButtonStyle())
                 .padding(.horizontal)
 
                 Button(action: onShowOptions) {

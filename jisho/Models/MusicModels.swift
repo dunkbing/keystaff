@@ -161,6 +161,31 @@ struct NoteRange: Equatable {
 enum InputMode: String, CaseIterable {
     case musicNotes = "Music Notes"
     case pianoKeys = "Piano Keys"
+    case chordIdentification = "Chord Identification"
+}
+
+// MARK: - Chord Quality
+enum ChordQuality: CaseIterable {
+    case major
+    case minor
+
+    var displayName: String {
+        switch self {
+        case .major:
+            return "Major"
+        case .minor:
+            return "Minor"
+        }
+    }
+
+    var intervals: [Int] {
+        switch self {
+        case .major:
+            return [0, 4, 7]
+        case .minor:
+            return [0, 3, 7]
+        }
+    }
 }
 
 // MARK: - Game Duration

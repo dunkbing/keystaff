@@ -8,13 +8,25 @@
 import SwiftUI
 
 struct StaffView: View {
-    let note: MusicNote?
+    private let notes: [MusicNote]
     let clef: Clef
     let showNote: Bool
 
     private let staffLineCount = 5
     private let lineSpacing: CGFloat = 16
     private let noteSize: CGFloat = 28
+
+    init(note: MusicNote?, clef: Clef, showNote: Bool) {
+        self.notes = note.map { [$0] } ?? []
+        self.clef = clef
+        self.showNote = showNote
+    }
+
+    init(notes: [MusicNote], clef: Clef, showNotes: Bool) {
+        self.notes = notes
+        self.clef = clef
+        self.showNote = showNotes
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -39,17 +51,23 @@ struct StaffView: View {
                     )
 
                 // Note if present
-                if showNote, let note = note {
-                    NoteSymbolView(
-                        note: note,
-                        clef: clef,
-                        lineSpacing: lineSpacing,
-                        staffCenter: geometry.size.height / 2
-                    )
-                    .position(
-                        x: geometry.size.width - 100,
-                        y: geometry.size.height / 2
-                    )
+                if showNote {
+                    let sortedNotes = notes.sorted {
+                        $0.position(for: clef) < $1.position(for: clef)
+                    }
+
+                    ForEach(Array(sortedNotes.enumerated()), id: \.element.id) { pair in
+                        NoteSymbolView(
+                            note: pair.element,
+                            clef: clef,
+                            lineSpacing: lineSpacing,
+                            staffCenter: geometry.size.height / 2
+                        )
+                        .position(
+                            x: geometry.size.width - 100,
+                            y: geometry.size.height / 2
+                        )
+                    }
                 }
             }
         }

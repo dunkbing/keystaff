@@ -21,6 +21,9 @@ class GameManager: ObservableObject {
     @Published var showFeedback: Bool = false
     @Published var lastAnswerCorrect: Bool = false
     @Published var lastSessionResult: SessionResult?
+    @Published var currentMode: InputMode = .musicNotes
+    @Published var currentChordNotes: [MusicNote] = []
+    @Published var chordAnswerOptions: [String] = []
 
     private var timer: Timer?
     private let settings: GameSettings
@@ -28,6 +31,8 @@ class GameManager: ObservableObject {
     private let resultStore: PracticeResultStore
     private var sessionStartDate: Date?
     private let feedbackGenerator = UINotificationFeedbackGenerator()
+    private var currentChordAnswer: String?
+    private let chordDiatonicSteps = [0, 2, 4]
 
     var accuracy: String {
         guard totalAttempts > 0 else { return "-" }
@@ -53,7 +58,11 @@ class GameManager: ObservableObject {
     }
 
     // MARK: - Game Control
-    func startGame() {
+    func startGame(mode: InputMode? = nil) {
+        if let mode = mode {
+            currentMode = mode
+        }
+
         score = 0
         totalAttempts = 0
         correctAttempts = 0
@@ -69,7 +78,7 @@ class GameManager: ObservableObject {
             timeRemaining = 0
         }
 
-        generateNewNote()
+        prepareNextQuestion()
     }
 
     func stopGame(shouldRecordResult: Bool = true) {
@@ -97,16 +106,38 @@ class GameManager: ObservableObject {
 
         sessionStartDate = nil
         currentNote = nil
+        currentChordNotes = []
+        chordAnswerOptions = []
+        currentChordAnswer = nil
     }
 
     func resetGame() {
+        let previousMode = currentMode
         stopGame(shouldRecordResult: totalAttempts > 0)
-        startGame()
+        startGame(mode: previousMode)
     }
 
     func clearHistory() {
         resultStore.clearAll()
         lastSessionResult = nil
+    }
+
+    func setMode(_ mode: InputMode) {
+        guard currentMode != mode else { return }
+        currentMode = mode
+
+        if isGameActive {
+            prepareNextQuestion()
+        } else {
+            switch mode {
+            case .chordIdentification:
+                currentNote = nil
+            case .musicNotes, .pianoKeys:
+                currentChordNotes = []
+                chordAnswerOptions = []
+                currentChordAnswer = nil
+            }
+        }
     }
 
     private func startTimer() {
@@ -123,6 +154,15 @@ class GameManager: ObservableObject {
     }
 
     // MARK: - Note Generation
+    private func prepareNextQuestion() {
+        switch currentMode {
+        case .musicNotes, .pianoKeys:
+            generateNewNote()
+        case .chordIdentification:
+            generateNewChord()
+        }
+    }
+
     func generateNewNote() {
         guard isGameActive else { return }
 
@@ -136,6 +176,9 @@ class GameManager: ObservableObject {
         // Generate random note within range
         let notes = generateNotesInRange(range)
         currentNote = notes.randomElement()
+        currentChordNotes = []
+        chordAnswerOptions = []
+        currentChordAnswer = nil
 
         // Play note if sound is enabled
         if settings.soundEnabled, let note = currentNote {
@@ -176,6 +219,175 @@ class GameManager: ObservableObject {
         }
 
         return notes
+    }
+
+    private func generateNewChord() {
+        guard isGameActive else { return }
+
+        let enabledClefs = Array(settings.selectedClefs)
+        guard !enabledClefs.isEmpty else { return }
+
+        let maxAttempts = 16
+        var attempt = 0
+        var generatedChord: (clef: Clef, notes: [MusicNote], label: String)?
+
+        while attempt < maxAttempts, generatedChord == nil {
+            let clef = enabledClefs.randomElement()!
+            let quality = ChordQuality.allCases.randomElement()!
+            let rootName = NoteName.allCases.randomElement()!
+            let rootOctave = chordRootOctave(for: clef)
+            let rootNote = MusicNote(name: rootName, octave: rootOctave, accidental: .natural)
+
+            let chordNotes = buildChordNotes(from: rootNote, quality: quality)
+            let range = settings.range(for: clef)
+
+            if chordNotes.allSatisfy({ isNoteInRange($0, range: range) }) {
+                let sortedNotes = chordNotes.sorted {
+                    $0.position(for: clef) < $1.position(for: clef)
+                }
+                let answerLabel = "\(rootNote.displayName) \(quality.displayName)"
+                generatedChord = (clef, sortedNotes, answerLabel)
+            }
+
+            attempt += 1
+        }
+
+        guard let result = generatedChord else {
+            currentNote = nil
+            currentChordNotes = []
+            chordAnswerOptions = []
+            currentChordAnswer = nil
+            return
+        }
+
+        currentClef = result.clef
+        currentNote = nil
+        currentChordNotes = result.notes
+        currentChordAnswer = result.label
+        chordAnswerOptions = generateChordOptions(correctAnswer: result.label)
+    }
+
+    private func buildChordNotes(from root: MusicNote, quality: ChordQuality) -> [MusicNote] {
+        zip(quality.intervals, chordDiatonicSteps).map { interval, steps in
+            makeChordNote(
+                root: root,
+                semitoneOffset: interval,
+                diatonicSteps: steps
+            )
+        }
+    }
+
+    private func makeChordNote(
+        root: MusicNote,
+        semitoneOffset: Int,
+        diatonicSteps: Int
+    ) -> MusicNote {
+        let targetSemitone = semitoneValue(for: root) + semitoneOffset
+        let noteName = advanceNoteName(root.name, steps: diatonicSteps)
+        let octave = octaveForChord(root: root, steps: diatonicSteps)
+        let baseNote = MusicNote(name: noteName, octave: octave, accidental: .natural)
+        let baseSemitone = semitoneValue(for: baseNote)
+        let difference = targetSemitone - baseSemitone
+
+        let accidental: Accidental
+        switch difference {
+        case 0:
+            accidental = .natural
+        case 1:
+            accidental = .sharp
+        case -1:
+            accidental = .flat
+        default:
+            accidental = difference > 0 ? .sharp : .flat
+        }
+
+        return MusicNote(name: noteName, octave: octave, accidental: accidental)
+    }
+
+    private func chordRootOctave(for clef: Clef) -> Int {
+        switch clef {
+        case .treble:
+            return 4
+        case .alto:
+            return 3
+        case .bass:
+            return 3
+        }
+    }
+
+    private func semitoneValue(for note: MusicNote) -> Int {
+        var value = note.name.semitonesFromC + (note.octave * 12)
+
+        switch note.accidental {
+        case .sharp:
+            value += 1
+        case .flat:
+            value -= 1
+        case .natural:
+            break
+        }
+
+        return value
+    }
+
+    private func advanceNoteName(_ name: NoteName, steps: Int) -> NoteName {
+        guard steps != 0 else { return name }
+
+        let ordered = NoteName.allCases
+        guard let startIndex = ordered.firstIndex(of: name) else { return name }
+
+        let newIndex = (startIndex + steps) % ordered.count
+        return ordered[newIndex >= 0 ? newIndex : newIndex + ordered.count]
+    }
+
+    private func octaveForChord(root: MusicNote, steps: Int) -> Int {
+        guard steps > 0 else { return root.octave }
+
+        let ordered = NoteName.allCases
+        guard let startIndex = ordered.firstIndex(of: root.name) else { return root.octave }
+
+        var octave = root.octave
+        var currentIndex = startIndex
+
+        for _ in 0..<steps {
+            let nextIndex = (currentIndex + 1) % ordered.count
+            if nextIndex == 0 {
+                octave += 1
+            }
+            currentIndex = nextIndex
+        }
+
+        return octave
+    }
+
+    private func generateChordOptions(correctAnswer: String) -> [String] {
+        var options: Set<String> = [correctAnswer]
+        let qualities = ChordQuality.allCases
+        let roots = NoteName.allCases
+        let maxIterations = 24
+        var iterations = 0
+
+        while options.count < 4 && iterations < maxIterations {
+            let root = roots.randomElement()!
+            let quality = qualities.randomElement()!
+            let option = "\(root.rawValue) \(quality.displayName)"
+            options.insert(option)
+            iterations += 1
+        }
+
+        if options.count < 4 {
+            outer: for root in roots {
+                for quality in qualities {
+                    let option = "\(root.rawValue) \(quality.displayName)"
+                    options.insert(option)
+                    if options.count == 4 {
+                        break outer
+                    }
+                }
+            }
+        }
+
+        return Array(options).shuffled()
     }
 
     private func isNoteInRange(_ note: MusicNote, range: NoteRange) -> Bool {
@@ -233,7 +445,38 @@ class GameManager: ObservableObject {
         showFeedback = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             self.showFeedback = false
-            self.generateNewNote()
+            self.prepareNextQuestion()
+        }
+    }
+
+    func checkChordAnswer(_ option: String) {
+        guard currentMode == .chordIdentification else { return }
+        guard let correctAnswer = currentChordAnswer else { return }
+
+        totalAttempts += 1
+
+        if option == correctAnswer {
+            correctAttempts += 1
+            score += 1
+            lastAnswerCorrect = true
+
+            if settings.hapticFeedbackEnabled {
+                feedbackGenerator.notificationOccurred(.success)
+                feedbackGenerator.prepare()
+            }
+        } else {
+            lastAnswerCorrect = false
+
+            if settings.hapticFeedbackEnabled {
+                feedbackGenerator.notificationOccurred(.error)
+                feedbackGenerator.prepare()
+            }
+        }
+
+        showFeedback = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.showFeedback = false
+            self.prepareNextQuestion()
         }
     }
 
