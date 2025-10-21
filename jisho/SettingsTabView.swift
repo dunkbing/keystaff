@@ -30,8 +30,50 @@ struct SettingsTabView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 10)
 
-                AppearanceSetting()
                 LanguageSetting()
+
+                SettingsSection(title: "other_apps", icon: "app.badge") {
+                    VStack(spacing: 0) {
+                        Button {
+                            let url =
+                                "https://apps.apple.com/app/apple-store/id6746691565?pt=127348166&ct=keystaff&mt=8"
+                            guard let appStoreURL = URL(string: url)
+                            else { return }
+                            UIApplication.shared.open(
+                                appStoreURL, options: [:], completionHandler: nil)
+                        } label: {
+                            if let kanajiIcon = UIImage(named: "kanaji") {
+                                SettingRowWithIcon(
+                                    uiImage: kanajiIcon,
+                                    color: Color.appAccent,
+                                    title: "kanaji_title",
+                                    showChevron: true
+                                )
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+
+                        Button {
+                            let url =
+                                "https://apps.apple.com/app/apple-store/id6727017255?pt=127348166&ct=keystaff&mt=8"
+                            guard let appStoreURL = URL(string: url)
+                            else { return }
+                            UIApplication.shared.open(
+                                appStoreURL, options: [:], completionHandler: nil)
+                        } label: {
+                            if let kanajiIcon = UIImage(named: "tikim") {
+                                SettingRowWithIcon(
+                                    uiImage: kanajiIcon,
+                                    color: Color.appAccent,
+                                    title: "tikim_title",
+                                    showChevron: true
+                                )
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    .padding(.vertical, 8)
+                }
 
                 // About Section
                 SettingsSection(title: "About", icon: "info.circle") {

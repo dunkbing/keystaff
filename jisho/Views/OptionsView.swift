@@ -280,8 +280,3 @@ struct ToggleRow: View {
         .padding(.vertical, 16)
     }
 }
-
-#Preview {
-    OptionsView()
-        .environmentObject(GameSettings.shared)
-}

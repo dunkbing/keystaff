@@ -18,7 +18,10 @@ struct jishoApp: App {
             ContentView()
                 .environmentObject(themeManager)
                 .environmentObject(languageManager)
-                .preferredColorScheme(themeManager.colorScheme)
+                .preferredColorScheme(.light)
+                .onAppear {
+                    themeManager.theme = AppTheme.ghibli
+                }
                 .withTheming()
                 .withLanguage()
         }

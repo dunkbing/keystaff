@@ -257,7 +257,27 @@ struct MetronomeView: View {
                             Spacer()
                         }
 
-                        HStack(spacing: 20) {
+                        HStack(spacing: 12) {
+                            // Minus button
+                            Button(action: {
+                                metronome.handleTempoEditingChange(isEditing: true)
+                                if metronome.tempo > 40 {
+                                    metronome.tempo -= 1
+                                }
+                                metronome.handleTempoEditingChange(isEditing: false)
+                            }) {
+                                Image(systemName: "minus")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(metronome.tempo > 40 ? Color.appText : Color.appSubtitle.opacity(0.5))
+                                    .frame(width: 36, height: 36)
+                                    .background(
+                                        Circle()
+                                            .fill(Color.appSurface2)
+                                    )
+                            }
+                            .disabled(metronome.tempo <= 40)
+                            .buttonStyle(ScaleButtonStyle())
+
                             Text("40")
                                 .font(.system(size: 14, weight: .semibold, design: .rounded))
                                 .foregroundColor(Color.appSubtitle)
@@ -277,6 +297,26 @@ struct MetronomeView: View {
                                 .font(.system(size: 14, weight: .semibold, design: .rounded))
                                 .foregroundColor(Color.appSubtitle)
                                 .frame(width: 32)
+
+                            // Plus button
+                            Button(action: {
+                                metronome.handleTempoEditingChange(isEditing: true)
+                                if metronome.tempo < 240 {
+                                    metronome.tempo += 1
+                                }
+                                metronome.handleTempoEditingChange(isEditing: false)
+                            }) {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(metronome.tempo < 240 ? Color.appText : Color.appSubtitle.opacity(0.5))
+                                    .frame(width: 36, height: 36)
+                                    .background(
+                                        Circle()
+                                            .fill(Color.appSurface2)
+                                    )
+                            }
+                            .disabled(metronome.tempo >= 240)
+                            .buttonStyle(ScaleButtonStyle())
                         }
                     }
                     .padding(20)
