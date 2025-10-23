@@ -21,9 +21,6 @@ struct SettingsTabView: View {
                         Text("Settings")
                             .font(.system(size: 34, weight: .bold))
                             .foregroundColor(Color.appText)
-                        Text("Customize your experience")
-                            .font(.subheadline)
-                            .foregroundColor(Color.appSubtitle)
                     }
                     Spacer()
                 }

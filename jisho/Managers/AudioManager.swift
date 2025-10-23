@@ -7,16 +7,19 @@
 
 import AVFoundation
 import Foundation
+import MediaPlayer
 
 class AudioManager: ObservableObject {
     static let shared = AudioManager()
 
     private var notePlayer: AVAudioPlayer?
     private var metronomePlayer: AVAudioPlayer?
+    private var remoteCommandsConfigured = false
 
     private init() {
         setupAudioSession()
         setupMetronomePlayer()
+        configureRemoteCommandCenter()
     }
 
     private func setupMetronomePlayer() {
@@ -34,9 +37,14 @@ class AudioManager: ObservableObject {
     }
 
     private func setupAudioSession() {
+        let audioSession = AVAudioSession.sharedInstance()
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-            try AVAudioSession.sharedInstance().setActive(true)
+            try audioSession.setCategory(
+                .playback,
+                mode: .default,
+                options: [.mixWithOthers, .allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker]
+            )
+            try audioSession.setActive(true)
         } catch {
             print("Failed to setup audio session: \(error)")
         }
@@ -177,9 +185,67 @@ class AudioManager: ObservableObject {
         notePlayer?.stop()
         metronomePlayer?.stop()
         stopMetronome()
+        clearMetronomeNowPlaying()
     }
 
     func stopMetronome() {
         metronomePlayer?.stop()
     }
+
+    // MARK: - Remote Command Center & Now Playing
+    private func configureRemoteCommandCenter() {
+        guard !remoteCommandsConfigured else { return }
+
+        let commandCenter = MPRemoteCommandCenter.shared()
+
+        commandCenter.playCommand.isEnabled = true
+        commandCenter.playCommand.addTarget { _ in
+            NotificationCenter.default.post(name: .metronomeRemotePlay, object: nil)
+            return .success
+        }
+
+        commandCenter.pauseCommand.isEnabled = true
+        commandCenter.pauseCommand.addTarget { _ in
+            NotificationCenter.default.post(name: .metronomeRemotePause, object: nil)
+            return .success
+        }
+
+        commandCenter.stopCommand.isEnabled = true
+        commandCenter.stopCommand.addTarget { _ in
+            NotificationCenter.default.post(name: .metronomeRemoteStop, object: nil)
+            return .success
+        }
+
+        remoteCommandsConfigured = true
+    }
+
+    func updateMetronomeNowPlaying(isPlaying: Bool, tempo: Double, timeSignature: TimeSignature, currentBeat: Int) {
+        var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
+
+        let displayTempo = Int(round(tempo))
+        info[MPMediaItemPropertyTitle] = NSLocalizedString("Metronome", comment: "Now Playing title")
+        info[MPMediaItemPropertyArtist] = "KeyStaff"
+        info[MPMediaItemPropertyAlbumTitle] = "\(displayTempo) BPM • \(timeSignature.rawValue)"
+        info[MPNowPlayingInfoPropertyIsLiveStream] = true
+        info[MPNowPlayingInfoPropertyDefaultPlaybackRate] = 1.0
+        info[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
+        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = elapsedTimeForBeat(currentBeat, tempo: tempo)
+
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+    }
+
+    func clearMetronomeNowPlaying() {
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+    }
+
+    private func elapsedTimeForBeat(_ beat: Int, tempo: Double) -> Double {
+        guard tempo > 0 else { return 0 }
+        return Double(beat) * (60.0 / tempo)
+    }
+}
+
+extension Notification.Name {
+    static let metronomeRemotePlay = Notification.Name("com.jisho.metronome.remote.play")
+    static let metronomeRemotePause = Notification.Name("com.jisho.metronome.remote.pause")
+    static let metronomeRemoteStop = Notification.Name("com.jisho.metronome.remote.stop")
 }

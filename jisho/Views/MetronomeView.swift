@@ -22,6 +22,32 @@ class MetronomeManager: ObservableObject {
     private var resumeWorkItem: DispatchWorkItem?
     private var wasPlayingBeforeAdjustment = false
     private let autoResumeDelay: TimeInterval = 0.7
+    private let timerQueue = DispatchQueue(label: "com.jisho.metronome.timer", qos: .userInitiated)
+
+    init() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRemotePlay),
+            name: .metronomeRemotePlay,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRemotePause),
+            name: .metronomeRemotePause,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRemoteStop),
+            name: .metronomeRemoteStop,
+            object: nil
+        )
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 
     var bpm: String {
         String(format: "%.0f", tempo)
@@ -44,6 +70,12 @@ class MetronomeManager: ObservableObject {
         currentBeat = 0
         scheduleTimer(fireImmediately: true)
         wasPlayingBeforeAdjustment = false
+        audioManager.updateMetronomeNowPlaying(
+            isPlaying: true,
+            tempo: tempo,
+            timeSignature: timeSignature,
+            currentBeat: currentBeat
+        )
     }
 
     func stop() {
@@ -53,6 +85,12 @@ class MetronomeManager: ObservableObject {
         beatIndex = 0
         currentBeat = 0
         audioManager.stopMetronome()
+        audioManager.updateMetronomeNowPlaying(
+            isPlaying: false,
+            tempo: tempo,
+            timeSignature: timeSignature,
+            currentBeat: currentBeat
+        )
     }
 
     func updateBeatCycle() {
@@ -65,17 +103,19 @@ class MetronomeManager: ObservableObject {
 
         let interval = 60.0 / tempo
 
-        let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.main)
-        timer.schedule(deadline: fireImmediately ? .now() : .now() + interval, repeating: interval)
+        let timer = DispatchSource.makeTimerSource(queue: timerQueue)
+        timer.schedule(deadline: .now() + interval, repeating: interval, leeway: .milliseconds(1))
         timer.setEventHandler { [weak self] in
-            guard let self = self, self.isPlaying else { return }
-            self.beatIndex = (self.beatIndex + 1) % self.timeSignature.beatsPerMeasure
-            self.currentBeat = self.beatIndex
-            let isAccent = self.timeSignature.accentBeats.contains(self.beatIndex)
-            self.audioManager.playMetronomeBeat(isAccent: isAccent)
+            self?.handleNextBeat()
         }
         timer.resume()
         self.timer = timer
+
+        if fireImmediately {
+            timerQueue.async { [weak self] in
+                self?.handleNextBeat()
+            }
+        }
     }
 
     func handleTempoEditingChange(isEditing: Bool) {
@@ -83,6 +123,12 @@ class MetronomeManager: ObservableObject {
             beginInteractiveChange()
         } else {
             endInteractiveChange()
+            audioManager.updateMetronomeNowPlaying(
+                isPlaying: isPlaying,
+                tempo: tempo,
+                timeSignature: timeSignature,
+                currentBeat: currentBeat
+            )
         }
     }
 
@@ -98,6 +144,12 @@ class MetronomeManager: ObservableObject {
         }
 
         timeSignature = signature
+        audioManager.updateMetronomeNowPlaying(
+            isPlaying: isPlaying,
+            tempo: tempo,
+            timeSignature: timeSignature,
+            currentBeat: currentBeat
+        )
 
         if shouldResume {
             endInteractiveChange()
@@ -125,6 +177,12 @@ class MetronomeManager: ObservableObject {
         isPlaying = false
         beatIndex = 0
         currentBeat = 0
+        audioManager.updateMetronomeNowPlaying(
+            isPlaying: false,
+            tempo: tempo,
+            timeSignature: timeSignature,
+            currentBeat: currentBeat
+        )
     }
 
     private func scheduleAutoResume() {
@@ -154,6 +212,48 @@ class MetronomeManager: ObservableObject {
         timer?.cancel()
         timer = nil
     }
+
+    private func handleNextBeat() {
+        guard isPlaying else { return }
+
+        beatIndex = (beatIndex + 1) % timeSignature.beatsPerMeasure
+        let currentBeatIndex = beatIndex
+        let isAccent = timeSignature.accentBeats.contains(currentBeatIndex)
+
+        audioManager.playMetronomeBeat(isAccent: isAccent)
+        audioManager.updateMetronomeNowPlaying(
+            isPlaying: true,
+            tempo: tempo,
+            timeSignature: timeSignature,
+            currentBeat: currentBeatIndex
+        )
+
+        DispatchQueue.main.async { [weak self] in
+            self?.currentBeat = currentBeatIndex
+        }
+    }
+
+    // MARK: - Remote Command Handling
+    @objc private func handleRemotePlay() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, !self.isPlaying else { return }
+            self.start()
+        }
+    }
+
+    @objc private func handleRemotePause() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, self.isPlaying else { return }
+            self.stop()
+        }
+    }
+
+    @objc private func handleRemoteStop() {
+        DispatchQueue.main.async { [weak self] in
+            self?.stop()
+        }
+    }
+
 }
 
 struct MetronomeView: View {
