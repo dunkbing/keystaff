@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		C34A22D02E896BF700CB9A2F /* TikimUI in Frameworks */ = {isa = PBXBuildFile; productRef = C34A22CF2E896BF700CB9A2F /* TikimUI */; };
+		C3A4F82B2EB0E5200072AB93 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3A4F82A2EB0E5200072AB93 /* WidgetKit.framework */; };
+		C3A4F82D2EB0E5200072AB93 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3A4F82C2EB0E5200072AB93 /* SwiftUI.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,12 +27,33 @@
 
 /* Begin PBXFileReference section */
 		C34A22BD2E8967F700CB9A2F /* jisho.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = jisho.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3A4F8282EB0E5200072AB93 /* MetronomeWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MetronomeWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3A4F82A2EB0E5200072AB93 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		C3A4F82C2EB0E5200072AB93 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C3A4F8232EB0E3AD0072AB93 /* Exceptions for "jisho" folder in "jisho" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				jisho_offline.db,
+			);
+			target = C34A22BC2E8967F700CB9A2F /* jisho */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C34A22BF2E8967F700CB9A2F /* jisho */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C3A4F8232EB0E3AD0072AB93 /* Exceptions for "jisho" folder in "jisho" target */,
+			);
 			path = jisho;
+			sourceTree = "<group>";
+		};
+		C3A4F82E2EB0E5200072AB93 /* MetronomeWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MetronomeWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -44,6 +67,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C3A4F8252EB0E5200072AB93 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C3A4F82D2EB0E5200072AB93 /* SwiftUI.framework in Frameworks */,
+				C3A4F82B2EB0E5200072AB93 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -51,6 +83,8 @@
 			isa = PBXGroup;
 			children = (
 				C34A22BF2E8967F700CB9A2F /* jisho */,
+				C3A4F82E2EB0E5200072AB93 /* MetronomeWidget */,
+				C3A4F8292EB0E5200072AB93 /* Frameworks */,
 				C34A22BE2E8967F700CB9A2F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -59,8 +93,18 @@
 			isa = PBXGroup;
 			children = (
 				C34A22BD2E8967F700CB9A2F /* jisho.app */,
+				C3A4F8282EB0E5200072AB93 /* MetronomeWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		C3A4F8292EB0E5200072AB93 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C3A4F82A2EB0E5200072AB93 /* WidgetKit.framework */,
+				C3A4F82C2EB0E5200072AB93 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -90,6 +134,28 @@
 			productReference = C34A22BD2E8967F700CB9A2F /* jisho.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C3A4F8272EB0E5200072AB93 /* MetronomeWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C3A4F8382EB0E5210072AB93 /* Build configuration list for PBXNativeTarget "MetronomeWidgetExtension" */;
+			buildPhases = (
+				C3A4F8242EB0E5200072AB93 /* Sources */,
+				C3A4F8252EB0E5200072AB93 /* Frameworks */,
+				C3A4F8262EB0E5200072AB93 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				C3A4F82E2EB0E5200072AB93 /* MetronomeWidget */,
+			);
+			name = MetronomeWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = MetronomeWidgetExtension;
+			productReference = C3A4F8282EB0E5200072AB93 /* MetronomeWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -101,6 +167,9 @@
 				LastUpgradeCheck = 1610;
 				TargetAttributes = {
 					C34A22BC2E8967F700CB9A2F = {
+						CreatedOnToolsVersion = 16.1;
+					};
+					C3A4F8272EB0E5200072AB93 = {
 						CreatedOnToolsVersion = 16.1;
 					};
 				};
@@ -124,6 +193,7 @@
 			projectRoot = "";
 			targets = (
 				C34A22BC2E8967F700CB9A2F /* jisho */,
+				C3A4F8272EB0E5200072AB93 /* MetronomeWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -136,10 +206,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C3A4F8262EB0E5200072AB93 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C34A22B92E8967F700CB9A2F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C3A4F8242EB0E5200072AB93 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -274,7 +358,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"jisho/Preview Content\"";
 				DEVELOPMENT_TEAM = 2SY55TFJ22;
 				ENABLE_PREVIEWS = YES;
@@ -292,7 +376,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = db99.dev.keystaff;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -310,7 +394,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"jisho/Preview Content\"";
 				DEVELOPMENT_TEAM = 2SY55TFJ22;
 				ENABLE_PREVIEWS = YES;
@@ -328,7 +412,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = db99.dev.keystaff;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -337,6 +421,66 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		C3A4F8392EB0E5210072AB93 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MetronomeWidget/MetronomeWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2SY55TFJ22;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MetronomeWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MetronomeWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = db99.dev.MetronomeWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		C3A4F83A2EB0E5210072AB93 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MetronomeWidget/MetronomeWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2SY55TFJ22;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MetronomeWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MetronomeWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = db99.dev.MetronomeWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -357,6 +501,15 @@
 			buildConfigurations = (
 				C34A22CC2E8967F800CB9A2F /* Debug */,
 				C34A22CD2E8967F800CB9A2F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C3A4F8382EB0E5210072AB93 /* Build configuration list for PBXNativeTarget "MetronomeWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C3A4F8392EB0E5210072AB93 /* Debug */,
+				C3A4F83A2EB0E5210072AB93 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

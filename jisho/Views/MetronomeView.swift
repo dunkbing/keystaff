@@ -8,6 +8,7 @@
 import SwiftUI
 import UIKit
 import TikimUI
+import ActivityKit
 
 class MetronomeManager: ObservableObject {
     @Published var isPlaying: Bool = false
@@ -23,7 +24,10 @@ class MetronomeManager: ObservableObject {
     private var resumeWorkItem: DispatchWorkItem?
     private var wasPlayingBeforeAdjustment = false
     private let autoResumeDelay: TimeInterval = 0.7
-    private let timerQueue = DispatchQueue(label: "com.jisho.metronome.timer", qos: .userInitiated)
+    private let timerQueue = DispatchQueue(label: "dev.db99.keystaff.metronome.timer", qos: .userInitiated)
+
+    // Live Activity - stored as Any to avoid @available on stored property
+    private var currentActivity: Any?
 
     init() {
         NotificationCenter.default.addObserver(
@@ -77,6 +81,7 @@ class MetronomeManager: ObservableObject {
             timeSignature: timeSignature,
             currentBeat: currentBeat
         )
+        startLiveActivity()
     }
 
     func stop() {
@@ -92,6 +97,7 @@ class MetronomeManager: ObservableObject {
             timeSignature: timeSignature,
             currentBeat: currentBeat
         )
+        endLiveActivity()
     }
 
     func updateBeatCycle() {
@@ -130,6 +136,7 @@ class MetronomeManager: ObservableObject {
                 timeSignature: timeSignature,
                 currentBeat: currentBeat
             )
+            updateLiveActivity()
         }
     }
 
@@ -151,6 +158,7 @@ class MetronomeManager: ObservableObject {
             timeSignature: timeSignature,
             currentBeat: currentBeat
         )
+        updateLiveActivity()
 
         if shouldResume {
             endInteractiveChange()
@@ -231,6 +239,7 @@ class MetronomeManager: ObservableObject {
 
         DispatchQueue.main.async { [weak self] in
             self?.currentBeat = currentBeatIndex
+            self?.updateLiveActivity()
         }
     }
 
@@ -255,10 +264,75 @@ class MetronomeManager: ObservableObject {
         }
     }
 
+    // MARK: - Live Activity Management
+    private func startLiveActivity() {
+        if #available(iOS 16.2, *) {
+            guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+                print("Live Activities are not enabled")
+                return
+            }
+
+            // End any existing activity first
+            endLiveActivity()
+
+            let attributes = MetronomeActivityAttributes(appName: "KeyStaff")
+            let contentState = MetronomeActivityAttributes.ContentState(
+                tempo: tempo,
+                timeSignature: timeSignature.rawValue,
+                currentBeat: currentBeat,
+                isPlaying: isPlaying
+            )
+
+            do {
+                let activity = try Activity<MetronomeActivityAttributes>.request(
+                    attributes: attributes,
+                    content: .init(state: contentState, staleDate: nil),
+                    pushType: nil
+                )
+                currentActivity = activity as Any
+                print("✅ Live Activity started")
+            } catch {
+                print("❌ Failed to start Live Activity: \(error)")
+            }
+        }
+    }
+
+    private func updateLiveActivity() {
+        if #available(iOS 16.2, *) {
+            guard let activity = currentActivity as? Activity<MetronomeActivityAttributes> else { return }
+
+            let contentState = MetronomeActivityAttributes.ContentState(
+                tempo: tempo,
+                timeSignature: timeSignature.rawValue,
+                currentBeat: currentBeat,
+                isPlaying: isPlaying
+            )
+
+            Task {
+                await activity.update(
+                    .init(state: contentState, staleDate: nil)
+                )
+            }
+        }
+    }
+
+    private func endLiveActivity() {
+        if #available(iOS 16.2, *) {
+            guard let activity = currentActivity as? Activity<MetronomeActivityAttributes> else { return }
+
+            Task {
+                await activity.end(nil, dismissalPolicy: .immediate)
+                currentActivity = nil
+                print("✅ Live Activity ended")
+            }
+        }
+    }
+
 }
 
 struct MetronomeView: View {
     @StateObject private var metronome = MetronomeManager()
+    @Environment(\.scenePhase) private var scenePhase
     private let timeSignatureColumns: [GridItem] = Array(
         repeating: GridItem(.flexible(), spacing: 12),
         count: 3
@@ -460,6 +534,15 @@ struct MetronomeView: View {
             }
         }
         .navigationBarHidden(true)
+        .onChange(of: scenePhase) { newPhase in
+            // Don't stop the metronome when going to background
+            // It will continue playing with background audio
+            if newPhase == .background {
+                print("App moved to background - metronome continues")
+            } else if newPhase == .active {
+                print("App became active")
+            }
+        }
         .onDisappear {
             metronome.stop()
         }
