@@ -15,6 +15,7 @@ class AudioManager: ObservableObject {
     private var notePlayer: AVAudioPlayer?
     private var metronomePlayer: AVAudioPlayer?
     private var remoteCommandsConfigured = false
+    private let metronomeEngine = MetronomeAudioEngine()
 
     private init() {
         setupAudioSession()
@@ -190,6 +191,15 @@ class AudioManager: ObservableObject {
 
     func stopMetronome() {
         metronomePlayer?.stop()
+        metronomeEngine.stop()
+    }
+
+    func startMetronomeLoop(tempo: Double, timeSignature: TimeSignature) {
+        metronomeEngine.start(tempo: tempo, timeSignature: timeSignature)
+    }
+
+    func updateMetronomeLoop(tempo: Double, timeSignature: TimeSignature, shouldPlay: Bool) {
+        metronomeEngine.update(tempo: tempo, timeSignature: timeSignature, shouldPlay: shouldPlay)
     }
 
     // MARK: - Remote Command Center & Now Playing
@@ -241,6 +251,179 @@ class AudioManager: ObservableObject {
     private func elapsedTimeForBeat(_ beat: Int, tempo: Double) -> Double {
         guard tempo > 0 else { return 0 }
         return Double(beat) * (60.0 / tempo)
+    }
+}
+
+// MARK: - Metronome Audio Engine
+private final class MetronomeAudioEngine {
+    private struct Configuration: Equatable {
+        let tempo: Double
+        let timeSignature: TimeSignature
+    }
+
+    private let engine = AVAudioEngine()
+    private let player = AVAudioPlayerNode()
+    private let queue = DispatchQueue(label: "com.jisho.metronome.engine", qos: .userInitiated)
+
+    private var sourceBuffer: AVAudioPCMBuffer?
+    private var cachedConfiguration: Configuration?
+    private var cachedMeasureBuffer: AVAudioPCMBuffer?
+    private var isPrepared = false
+
+    init() {
+        prepareSourceBuffer()
+    }
+
+    func start(tempo: Double, timeSignature: TimeSignature) {
+        queue.async { [weak self] in
+            self?.scheduleIfNeeded(tempo: tempo, timeSignature: timeSignature, playImmediately: true)
+        }
+    }
+
+    func update(tempo: Double, timeSignature: TimeSignature, shouldPlay: Bool) {
+        queue.async { [weak self] in
+            guard let self else { return }
+            if shouldPlay {
+                self.scheduleIfNeeded(tempo: tempo, timeSignature: timeSignature, playImmediately: true)
+            } else {
+                _ = self.ensureMeasureBuffer(tempo: tempo, timeSignature: timeSignature)
+            }
+        }
+    }
+
+    func stop() {
+        queue.async { [weak self] in
+            guard let self else { return }
+            self.player.stop()
+            self.player.reset()
+        }
+    }
+
+    private func prepareSourceBuffer() {
+        guard let url = Bundle.main.url(forResource: "metronome", withExtension: "mp3") else {
+            print("❌ Failed to locate metronome source for engine")
+            return
+        }
+
+        do {
+            let file = try AVAudioFile(forReading: url)
+            guard let format = AVAudioFormat(
+                standardFormatWithSampleRate: file.processingFormat.sampleRate,
+                channels: file.processingFormat.channelCount
+            ) else {
+                print("❌ Unable to create metronome format")
+                return
+            }
+
+            guard let buffer = AVAudioPCMBuffer(
+                pcmFormat: format,
+                frameCapacity: AVAudioFrameCount(file.length)
+            ) else {
+                print("❌ Unable to allocate metronome buffer")
+                return
+            }
+
+            try file.read(into: buffer)
+            sourceBuffer = buffer
+            attachEngineIfNeeded(with: format)
+        } catch {
+            print("❌ Failed to prepare metronome engine: \(error)")
+        }
+    }
+
+    private func attachEngineIfNeeded(with format: AVAudioFormat) {
+        guard !isPrepared else { return }
+        engine.attach(player)
+        engine.connect(player, to: engine.mainMixerNode, format: format)
+        engine.prepare()
+        isPrepared = true
+    }
+
+    private func scheduleIfNeeded(tempo: Double, timeSignature: TimeSignature, playImmediately: Bool) {
+        guard let buffer = ensureMeasureBuffer(tempo: tempo, timeSignature: timeSignature) else { return }
+
+        do {
+            if !engine.isRunning {
+                try engine.start()
+            }
+        } catch {
+            print("❌ Unable to start metronome engine: \(error)")
+            return
+        }
+
+        player.stop()
+        player.scheduleBuffer(buffer, at: nil, options: [.loops], completionHandler: nil)
+
+        if playImmediately {
+            player.play()
+        }
+    }
+
+    private func ensureMeasureBuffer(tempo: Double, timeSignature: TimeSignature) -> AVAudioPCMBuffer? {
+        guard let sourceBuffer else { return nil }
+
+        let configuration = Configuration(tempo: tempo, timeSignature: timeSignature)
+        if cachedConfiguration != configuration {
+            cachedMeasureBuffer = buildMeasureBuffer(
+                from: sourceBuffer,
+                tempo: tempo,
+                timeSignature: timeSignature
+            )
+            cachedConfiguration = configuration
+        }
+
+        return cachedMeasureBuffer
+    }
+
+    private func buildMeasureBuffer(
+        from source: AVAudioPCMBuffer,
+        tempo: Double,
+        timeSignature: TimeSignature
+    ) -> AVAudioPCMBuffer? {
+        let sampleRate = source.format.sampleRate
+        let beatsPerMeasure = max(timeSignature.beatsPerMeasure, 1)
+        let accentBeats = timeSignature.accentBeats
+
+        let sourceFrames = Int(source.frameLength)
+        let beatSamples = max(sourceFrames, Int(round((60.0 / tempo) * sampleRate)))
+        let measureSamples = beatSamples * beatsPerMeasure
+
+        guard let buffer = AVAudioPCMBuffer(
+            pcmFormat: source.format,
+            frameCapacity: AVAudioFrameCount(measureSamples)
+        ) else {
+            return nil
+        }
+
+        buffer.frameLength = buffer.frameCapacity
+        let channelCount = Int(source.format.channelCount)
+
+        for channel in 0..<channelCount {
+            guard let sourceChannel = source.floatChannelData?[channel],
+                  let destinationChannel = buffer.floatChannelData?[channel] else {
+                continue
+            }
+
+            for sample in 0..<measureSamples {
+                destinationChannel[sample] = 0
+            }
+
+            for beat in 0..<beatsPerMeasure {
+                let isAccent = accentBeats.contains(beat)
+                let gain: Float = isAccent ? 1.0 : 0.55
+                let destinationOffset = beat * beatSamples
+
+                for frame in 0..<sourceFrames {
+                    let destinationIndex = destinationOffset + frame
+                    if destinationIndex >= measureSamples {
+                        break
+                    }
+                    destinationChannel[destinationIndex] += sourceChannel[frame] * gain
+                }
+            }
+        }
+
+        return buffer
     }
 }
 

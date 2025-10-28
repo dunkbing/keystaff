@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 import TikimUI
 
 class MetronomeManager: ObservableObject {
@@ -279,26 +280,7 @@ struct MetronomeView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 32) {
-                    // BPM Display with play button inside
                     VStack(spacing: 16) {
-                        HStack(spacing: 12) {
-                            Text("TEMPO")
-                                .font(.system(size: 14, weight: .semibold))
-                                .tracking(2)
-                                .foregroundColor(Color.appSubtitle)
-
-                            Text(metronome.bpm)
-                                .font(.system(size: 24, weight: .bold, design: .rounded))
-                                .foregroundColor(Color.appText)
-
-                            Text("BPM")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(Color.appSubtitle)
-
-                            Spacer()
-                        }
-                        .padding(.horizontal, 24)
-
                         ZStack {
                             // Beat indicators around the circle
                             CircularBeatIndicatorView(
@@ -340,25 +322,16 @@ struct MetronomeView: View {
                         .padding(.vertical, 20)
                     }
 
-                    // Tempo slider with enhanced design
+                    // Tempo ruler with enhanced design
                     VStack(spacing: 20) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("ADJUST TEMPO")
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .tracking(2)
-                                    .foregroundColor(Color.appSubtitle)
-
-                                Text("Slide to change BPM")
-                                    .font(.caption)
-                                    .foregroundColor(Color.appSubtitle.opacity(0.6))
+                        TempoRulerControl(
+                            tempo: $metronome.tempo,
+                            onEditingChanged: { editing in
+                                metronome.handleTempoEditingChange(isEditing: editing)
                             }
+                        )
 
-                            Spacer()
-                        }
-
-                        HStack(spacing: 12) {
-                            // Minus button
+                        HStack(spacing: 32) {
                             Button(action: {
                                 metronome.handleTempoEditingChange(isEditing: true)
                                 if metronome.tempo > 40 {
@@ -367,9 +340,9 @@ struct MetronomeView: View {
                                 metronome.handleTempoEditingChange(isEditing: false)
                             }) {
                                 Image(systemName: "minus")
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(.system(size: 16, weight: .bold))
                                     .foregroundColor(metronome.tempo > 40 ? Color.appText : Color.appSubtitle.opacity(0.5))
-                                    .frame(width: 36, height: 36)
+                                    .frame(width: 40, height: 40)
                                     .background(
                                         Circle()
                                             .fill(Color.appSurface2)
@@ -378,27 +351,10 @@ struct MetronomeView: View {
                             .disabled(metronome.tempo <= 40)
                             .buttonStyle(ScaleButtonStyle())
 
-                            Text("40")
-                                .font(.system(size: 14, weight: .semibold, design: .rounded))
-                                .foregroundColor(Color.appSubtitle)
-                                .frame(width: 32)
+                            Text("\(Int(metronome.tempo.rounded())) BPM")
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .foregroundColor(Color.appText)
 
-                            Slider(
-                                value: $metronome.tempo,
-                                in: 40...240,
-                                step: 1,
-                                onEditingChanged: { editing in
-                                    metronome.handleTempoEditingChange(isEditing: editing)
-                                }
-                            )
-                            .accentColor(Color(red: 0.91, green: 0.55, blue: 0.56))
-
-                            Text("240")
-                                .font(.system(size: 14, weight: .semibold, design: .rounded))
-                                .foregroundColor(Color.appSubtitle)
-                                .frame(width: 32)
-
-                            // Plus button
                             Button(action: {
                                 metronome.handleTempoEditingChange(isEditing: true)
                                 if metronome.tempo < 240 {
@@ -407,9 +363,9 @@ struct MetronomeView: View {
                                 metronome.handleTempoEditingChange(isEditing: false)
                             }) {
                                 Image(systemName: "plus")
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(.system(size: 16, weight: .bold))
                                     .foregroundColor(metronome.tempo < 240 ? Color.appText : Color.appSubtitle.opacity(0.5))
-                                    .frame(width: 36, height: 36)
+                                    .frame(width: 40, height: 40)
                                     .background(
                                         Circle()
                                             .fill(Color.appSurface2)
@@ -418,6 +374,7 @@ struct MetronomeView: View {
                             .disabled(metronome.tempo >= 240)
                             .buttonStyle(ScaleButtonStyle())
                         }
+                        .padding(.top, 4)
                     }
                     .padding(20)
                     .background(
@@ -505,6 +462,287 @@ struct MetronomeView: View {
         .navigationBarHidden(true)
         .onDisappear {
             metronome.stop()
+        }
+    }
+}
+
+private struct TempoRulerControl: View {
+    @Binding var tempo: Double
+    var onEditingChanged: (Bool) -> Void
+
+    private let tempoRange: ClosedRange<Int> = 40...240
+    private let tickSpacing: CGFloat = 9
+
+    var body: some View {
+        VStack(spacing: 14) {
+            TrianglePointer()
+                .fill(Color(red: 0.91, green: 0.55, blue: 0.56))
+                .frame(width: 18, height: 12)
+                .shadow(color: Color.black.opacity(0.2), radius: 4, y: 2)
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.appSurface2)
+                    .shadow(color: Color.black.opacity(0.08), radius: 10, y: 4)
+
+                TempoRulerRepresentable(
+                    tempo: $tempo,
+                    range: tempoRange,
+                    spacing: tickSpacing,
+                    onEditingChanged: onEditingChanged
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                Rectangle()
+                    .fill(Color(red: 0.91, green: 0.55, blue: 0.56))
+                    .frame(width: 2, height: 50)
+            }
+            .frame(height: 96)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+private struct TrianglePointer: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.closeSubpath()
+        return path
+    }
+}
+
+private struct TempoRulerRepresentable: UIViewRepresentable {
+    @Binding var tempo: Double
+    let range: ClosedRange<Int>
+    let spacing: CGFloat
+    var onEditingChanged: (Bool) -> Void
+
+    func makeUIView(context: Context) -> TempoRulerScrollView {
+        let scrollView = TempoRulerScrollView(range: range, spacing: spacing)
+        scrollView.delegate = context.coordinator
+        scrollView.backgroundColor = .clear
+        scrollView.contentInsetAdjustmentBehavior = .never
+        return scrollView
+    }
+
+    func updateUIView(_ scrollView: TempoRulerScrollView, context: Context) {
+        scrollView.layoutIfNeeded()
+        context.coordinator.update(scrollView: scrollView, tempo: tempo)
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    func clampedTempo(for value: Double) -> Int {
+        let intValue = Int(round(value))
+        return min(max(intValue, range.lowerBound), range.upperBound)
+    }
+
+    func tempo(for scrollView: UIScrollView) -> Int {
+        let rawPosition = scrollView.contentOffset.x + scrollView.contentInset.left
+        let relative = rawPosition / spacing
+        let candidate = range.lowerBound + Int(round(relative))
+        return min(max(candidate, range.lowerBound), range.upperBound)
+    }
+
+    func snap(_ scrollView: TempoRulerScrollView, to value: Int, animated: Bool = true) {
+        let offset = scrollView.offset(for: value)
+        scrollView.setContentOffset(CGPoint(x: offset, y: 0), animated: animated)
+    }
+
+    final class Coordinator: NSObject, UIScrollViewDelegate {
+        private let parent: TempoRulerRepresentable
+        private var isUserInteracting = false
+        private var isEditing = false
+
+        init(parent: TempoRulerRepresentable) {
+            self.parent = parent
+        }
+
+        func update(scrollView: TempoRulerScrollView, tempo: Double) {
+            guard !isUserInteracting else { return }
+            let targetTempo = parent.clampedTempo(for: tempo)
+            let desiredOffset = scrollView.offset(for: targetTempo)
+            if abs(scrollView.contentOffset.x - desiredOffset) > 0.5 {
+                scrollView.setContentOffset(CGPoint(x: desiredOffset, y: 0), animated: false)
+            }
+        }
+
+        func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+            isUserInteracting = true
+            if !isEditing {
+                isEditing = true
+                parent.onEditingChanged(true)
+            }
+        }
+
+        func scrollViewDidScroll(_ scrollView: UIScrollView) {
+            guard isUserInteracting else { return }
+            let tempoValue = parent.tempo(for: scrollView)
+            if parent.clampedTempo(for: parent.$tempo.wrappedValue) != tempoValue {
+                parent.$tempo.wrappedValue = Double(tempoValue)
+            }
+        }
+
+        func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+            if !decelerate {
+                finalizeInteraction(on: scrollView)
+            }
+        }
+
+        func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+            finalizeInteraction(on: scrollView)
+        }
+
+        func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+            if !isUserInteracting {
+                finalizeInteraction(on: scrollView, shouldNotify: false)
+            }
+        }
+
+        private func finalizeInteraction(on scrollView: UIScrollView, shouldNotify: Bool = true) {
+            guard let tempoScrollView = scrollView as? TempoRulerScrollView else { return }
+            let tempoValue = parent.tempo(for: scrollView)
+            parent.$tempo.wrappedValue = Double(tempoValue)
+            parent.snap(tempoScrollView, to: tempoValue, animated: false)
+            if shouldNotify, isEditing {
+                parent.onEditingChanged(false)
+            }
+            isUserInteracting = false
+            isEditing = false
+        }
+    }
+}
+
+private final class TempoRulerScrollView: UIScrollView {
+    private let contentView: TempoRulerContentView
+    private let range: ClosedRange<Int>
+    private let spacing: CGFloat
+
+    init(range: ClosedRange<Int>, spacing: CGFloat) {
+        self.range = range
+        self.spacing = spacing
+        self.contentView = TempoRulerContentView(range: range, spacing: spacing)
+        super.init(frame: .zero)
+        showsHorizontalScrollIndicator = false
+        showsVerticalScrollIndicator = false
+        decelerationRate = .fast
+        bounces = true
+
+        addSubview(contentView)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let size = contentView.intrinsicContentSize
+        if contentView.frame.size != size {
+            contentView.frame = CGRect(origin: .zero, size: size)
+        }
+        contentSize = size
+
+        let inset = bounds.width / 2
+        if abs(contentInset.left - inset) > 0.5 {
+            let currentPosition = contentOffset.x + contentInset.left
+            contentInset = UIEdgeInsets(top: 0, left: inset, bottom: 0, right: inset)
+            contentOffset = CGPoint(x: currentPosition - inset, y: 0)
+        }
+    }
+
+    func offset(for tempo: Int) -> CGFloat {
+        let clamped = min(max(tempo, range.lowerBound), range.upperBound)
+        let position = CGFloat(clamped - range.lowerBound) * spacing
+        return position - contentInset.left
+    }
+}
+
+private final class TempoRulerContentView: UIView {
+    private let range: ClosedRange<Int>
+    private let spacing: CGFloat
+    private let tallHeight: CGFloat = 40
+    private let mediumHeight: CGFloat = 25
+    private let shortHeight: CGFloat = 12
+    private let topPadding: CGFloat = 8
+
+    private var rangeCount: Int {
+        range.upperBound - range.lowerBound + 1
+    }
+
+    init(range: ClosedRange<Int>, spacing: CGFloat) {
+        self.range = range
+        self.spacing = spacing
+        super.init(frame: .zero)
+        backgroundColor = .clear
+        contentScaleFactor = UIScreen.main.scale
+        isOpaque = false
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override var intrinsicContentSize: CGSize {
+        CGSize(
+            width: CGFloat(rangeCount - 1) * spacing + 1,
+            height: topPadding + tallHeight + 34
+        )
+    }
+
+    override func draw(_ rect: CGRect) {
+        guard let context = UIGraphicsGetCurrentContext() else { return }
+        context.clear(rect)
+
+        let tickColor = UIColor(Color.appSubtitle.opacity(0.85))
+        let labelColor = UIColor(Color.appSubtitle)
+        let baseline = topPadding + tallHeight
+
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .center
+
+        let labelAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 12, weight: .semibold),
+            .foregroundColor: labelColor,
+            .paragraphStyle: paragraphStyle
+        ]
+
+        for value in range {
+            let step = CGFloat(value - range.lowerBound)
+            let x = step * spacing
+
+            let isTenth = value % 10 == 0
+            let isFifth = value % 5 == 0
+
+            let height: CGFloat = isTenth ? tallHeight : (isFifth ? mediumHeight : shortHeight)
+            let lineWidth: CGFloat = isTenth ? 3 : 1.5
+            let lineRect = CGRect(
+                x: x - lineWidth / 2,
+                y: baseline - height,
+                width: lineWidth,
+                height: height
+            )
+
+            let path = UIBezierPath(roundedRect: lineRect, cornerRadius: lineWidth / 2)
+            tickColor.setFill()
+            path.fill()
+
+            if isTenth {
+                let text = "\(value)" as NSString
+                let size = text.size(withAttributes: labelAttributes)
+                let rect = CGRect(
+                    x: x - size.width / 2,
+                    y: baseline + 8,
+                    width: size.width,
+                    height: size.height
+                )
+                text.draw(in: rect, withAttributes: labelAttributes)
+            }
         }
     }
 }
