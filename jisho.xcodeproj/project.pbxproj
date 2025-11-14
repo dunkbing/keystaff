@@ -50,6 +50,7 @@
 		C3A4F8232EB0E3AD0072AB93 /* Exceptions for "jisho" folder in "jisho" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Info.plist,
 				jisho_offline.db,
 			);
 			target = C34A22BC2E8967F700CB9A2F /* jisho */;
@@ -381,6 +382,7 @@
 				DEVELOPMENT_TEAM = 2SY55TFJ22;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = jisho/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = KeyStaff;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -417,6 +419,7 @@
 				DEVELOPMENT_TEAM = 2SY55TFJ22;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = jisho/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = KeyStaff;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
