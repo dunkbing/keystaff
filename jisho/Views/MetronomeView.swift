@@ -327,7 +327,6 @@ class MetronomeManager: ObservableObject {
             }
         }
     }
-
 }
 
 struct MetronomeView: View {
