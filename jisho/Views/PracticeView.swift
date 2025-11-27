@@ -13,10 +13,11 @@ struct PracticeView: View {
     @ObservedObject private var resultStore = PracticeResultStore.shared
     @EnvironmentObject var settings: GameSettings
     @State private var inputMode: InputMode = .musicNotes
+    @State private var selectedInstrument: InstrumentType = .piano
     @State private var showOptions = false
     @State private var showMenu = false
 
-    private let noteInputModes: [InputMode] = [.musicNotes, .pianoKeys]
+    private let noteInputModes: [InputMode] = [.musicNotes, .instruments]
 
     private var staffNotes: [MusicNote] {
         if gameManager.currentMode == .chordIdentification {
@@ -40,7 +41,7 @@ struct PracticeView: View {
         switch mode {
         case .musicNotes:
             return "music.note"
-        case .pianoKeys:
+        case .instruments:
             return "pianokeys"
         case .chordIdentification:
             return "music.note.list"
@@ -225,8 +226,8 @@ struct PracticeView: View {
                         }
                         .padding(.horizontal, 12)
 
-                    case .pianoKeys:
-                        PianoKeyboardView { note, accidental in
+                    case .instruments:
+                        InstrumentsView(selectedInstrument: $selectedInstrument) { note, accidental in
                             if gameManager.isGameActive {
                                 gameManager.checkAnswer(note, accidental: accidental)
                             }
