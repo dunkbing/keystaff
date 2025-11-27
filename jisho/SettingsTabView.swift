@@ -144,6 +144,30 @@ struct SettingsTabView: View {
                             .padding(.horizontal, 20)
                             .padding(.vertical, 16)
                         }
+
+                        Divider()
+                            .padding(.leading, 56)
+
+                        Link(destination: URL(string: "https://apps.apple.com/app/id6753950371?action=write-review")!) {
+                            HStack(spacing: 16) {
+                                Image(systemName: "star.fill")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(Color(red: 0.91, green: 0.55, blue: 0.56))
+                                    .frame(width: 36)
+
+                                Text("Rate on App Store")
+                                    .font(.system(size: 17, weight: .medium))
+                                    .foregroundColor(Color.appAccent)
+
+                                Spacer()
+
+                                Image(systemName: "arrow.up.right")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(Color.appAccent)
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
+                        }
                     }
                 }
 

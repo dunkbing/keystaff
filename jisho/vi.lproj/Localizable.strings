@@ -16,7 +16,7 @@
 "End Session" = "Kết thúc phiên";
 "Enjoy Catppuccin-inspired themes and customizable settings" = "Thưởng thức các chủ đề lấy cảm hứng từ Catppuccin cùng nhiều tùy chỉnh";
 "English" = "Tiếng Anh";
-"Follow developer" = "Theo dõi nhà phát triển";
+"Follow developer" = "Nhà phát triển";
 "Highlights" = "Điểm nổi bật";
 "Haptic" = "Rung phản hồi";
 "In music, each Note represents a sound. The Notes are named after the alphabets: A, B, C, D, E, F, G.\n\nThe Stave is made of five lines and four spaces (counted upwards). The Notes are written on and between the lines of a Stave." = "Trong âm nhạc, mỗi nốt biểu thị một âm thanh. Các nốt được đặt tên theo các chữ cái: A, B, C, D, E, F, G.\n\nKhuông nhạc gồm năm dòng và bốn khoảng trống (đếm từ dưới lên). Nốt nhạc được viết trên và giữa các dòng của khuông.";
@@ -66,3 +66,7 @@
 "other_apps" = "App cùng nhà phát triển";
 "kanaji_title" = "Kanaji - Học Kanji tiếng Nhật";
 "tikim_title" = "Tikim - Quản lý chi chiêu";
+"Note Identification" = "Nhận diện nốt nhạc";
+"Chord Identification" = "Nhận diện hợp âm";
+"Instruments" = "Nhạc cụ";
+"Rate on App Store" = "Đánh giá trên App Store";

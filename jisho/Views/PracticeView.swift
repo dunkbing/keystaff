@@ -132,10 +132,10 @@ struct PracticeView: View {
                     EnhancedStatView(title: "Accuracy", value: gameManager.accuracy, icon: "target")
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 24)
+                .padding(.top, 16)
 
                 Spacer()
-                    .frame(minHeight: 20, maxHeight: 40)
+                    .frame(minHeight: 8, maxHeight: 16)
 
                 // Staff with note/chord content
                 StaffView(
@@ -144,12 +144,12 @@ struct PracticeView: View {
                     showNotes: shouldShowStaffNotes
                 )
                 .padding(.horizontal)
-                .padding(.vertical, 20)
+                .padding(.vertical, 8)
                 .opacity(gameManager.showFeedback ? 0.3 : 1.0)
                 .animation(.easeInOut(duration: 0.15), value: gameManager.showFeedback)
 
                 Spacer()
-                    .frame(minHeight: 10, maxHeight: 30)
+                    .frame(minHeight: 4, maxHeight: 12)
 
                 // Input mode toggle with enhanced design
                 if gameManager.currentMode != .chordIdentification || !gameManager.isGameActive {

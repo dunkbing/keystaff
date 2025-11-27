@@ -71,7 +71,7 @@ struct StaffView: View {
                 }
             }
         }
-        .frame(height: 160)
+        .frame(height: 130)
     }
 }
 

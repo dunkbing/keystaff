@@ -132,7 +132,7 @@ class GameManager: ObservableObject {
             switch mode {
             case .chordIdentification:
                 currentNote = nil
-            case .musicNotes, .pianoKeys:
+            case .musicNotes, .instruments:
                 currentChordNotes = []
                 chordAnswerOptions = []
                 currentChordAnswer = nil
@@ -156,7 +156,7 @@ class GameManager: ObservableObject {
     // MARK: - Note Generation
     private func prepareNextQuestion() {
         switch currentMode {
-        case .musicNotes, .pianoKeys:
+        case .musicNotes, .instruments:
             generateNewNote()
         case .chordIdentification:
             generateNewChord()

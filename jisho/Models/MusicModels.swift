@@ -160,8 +160,42 @@ struct NoteRange: Equatable {
 // MARK: - Input Mode
 enum InputMode: String, CaseIterable {
     case musicNotes = "Music Notes"
-    case pianoKeys = "Piano Keys"
+    case instruments = "Instruments"
     case chordIdentification = "Chord Identification"
+}
+
+// MARK: - Instrument Type
+enum InstrumentType: String, CaseIterable, Identifiable {
+    case piano = "Piano"
+    case guitar = "Guitar"
+    case xylophone = "Xylophone"
+    case recorder = "Recorder"
+    case harp = "Harp"
+    case violin = "Violin"
+
+    var id: String { rawValue }
+
+    var iconName: String {
+        switch self {
+        case .piano:
+            return "pianokeys"
+        case .guitar:
+            return "guitars"
+        case .xylophone:
+            return "rectangle.split.3x3"
+        case .recorder:
+            return "wind"
+        case .harp:
+            return "lineweight"
+        case .violin:
+            return "music.mic"
+        }
+    }
+
+    /// Instruments that are visible in the selector
+    static var visibleCases: [InstrumentType] {
+        [.piano, .violin]
+    }
 }
 
 // MARK: - Chord Quality
