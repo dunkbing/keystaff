@@ -27,13 +27,20 @@ struct ContentView: View {
                 .tag(0)
 
                 NavigationView {
+                    EarTrainingView()
+                        .onAppear { showTabBar = true }
+                }
+                .navigationViewStyle(StackNavigationViewStyle())
+                .tag(1)
+
+                NavigationView {
                     MetronomeView()
                         .onAppear {
                             showTabBar = true
                         }
                 }
                 .navigationViewStyle(StackNavigationViewStyle())
-                .tag(1)
+                .tag(2)
 
                 NavigationView {
                     SettingsTabView()
@@ -41,7 +48,7 @@ struct ContentView: View {
                         .navigationBarTitleDisplayMode(.inline)
                 }
                 .navigationViewStyle(StackNavigationViewStyle())
-                .tag(2)
+                .tag(3)
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .edgesIgnoringSafeArea(.bottom)
@@ -52,6 +59,7 @@ struct ContentView: View {
                     selectedTab: $selectedTab,
                     items: [
                         (icon: "music.note.list", title: "Practice"),
+                        (icon: "ear.fill", title: "Ear Training"),
                         (icon: "metronome", title: "Metronome"),
                         (icon: "gear", title: "Settings"),
                     ]
