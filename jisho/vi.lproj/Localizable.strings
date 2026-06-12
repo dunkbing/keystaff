@@ -113,3 +113,37 @@
 "Major 7th" = "Quãng 7 trưởng";
 "Octave" = "Quãng 8";
 "Sharp and Flat Notes" = "Nốt thăng và giáng";
+
+// Vocal Training
+"Vocal" = "Luyện thanh";
+"Vocal Range" = "Quãng giọng";
+"Vocal Range Test" = "Kiểm tra quãng giọng";
+"Daily Goal" = "Mục tiêu hằng ngày";
+"%lld / %lld exercises today" = "%lld / %lld bài tập hôm nay";
+"Breathing" = "Hơi thở";
+"Tone" = "Âm sắc";
+"Range" = "Quãng giọng";
+"Agility" = "Linh hoạt";
+"Scales" = "Âm giai";
+"Goal" = "Mục tiêu";
+"Instructions" = "Hướng dẫn";
+"Start" = "Bắt đầu";
+"Done" = "Xong";
+"Paused" = "Tạm dừng";
+"Resume" = "Tiếp tục";
+"Get ready to sing" = "Chuẩn bị hát nào";
+"Pitch Accuracy" = "Độ chính xác cao độ";
+"Great pitch control!" = "Kiểm soát cao độ tuyệt vời!";
+"Getting there — keep practicing!" = "Sắp được rồi — luyện tập tiếp nhé!";
+"You are quite off-pitch." = "Bạn đang hát khá lệch tông.";
+"Wired Headphones Recommended" = "Nên dùng tai nghe có dây";
+"Microphone Access Needed" = "Cần quyền truy cập micro";
+"Allow microphone access in Settings so we can hear your singing." = "Hãy cho phép truy cập micro trong Cài đặt để ứng dụng nghe được giọng hát của bạn.";
+"Open Settings" = "Mở Cài đặt";
+"Sing \"Ah\" on your lowest note, then your highest, holding each for a moment." = "Hát \"A\" ở nốt thấp nhất, rồi nốt cao nhất của bạn, giữ mỗi nốt một lúc.";
+"Allow microphone access in Settings to test your range." = "Hãy cho phép truy cập micro trong Cài đặt để kiểm tra quãng giọng.";
+"Lowest" = "Thấp nhất";
+"Highest" = "Cao nhất";
+"Suggested: %@" = "Gợi ý: %@";
+"Use This Range" = "Dùng quãng giọng này";
+"Share KeyStaff" = "Chia sẻ KeyStaff";

@@ -43,7 +43,7 @@ class AudioManager: ObservableObject {
             try audioSession.setCategory(
                 .playback,
                 mode: .default,
-                options: [.mixWithOthers, .allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker]
+                options: [.mixWithOthers, .allowBluetooth, .allowBluetoothA2DP]
             )
             try audioSession.setActive(true)
         } catch {
@@ -53,9 +53,37 @@ class AudioManager: ObservableObject {
 
     // MARK: - Note Playback
     func playNote(_ note: MusicNote) {
-        // Generate a simple sine wave for the note
+        // Prefer the bundled piano recordings; fall back to synthesis for
+        // notes outside the sampled range (C2-C7)
+        if let url = Self.pianoSampleURL(midi: midiNumber(for: note)) {
+            do {
+                notePlayer = try AVAudioPlayer(contentsOf: url)
+                notePlayer?.play()
+                return
+            } catch {
+                print("Failed to play piano sample: \(error)")
+            }
+        }
         let frequency = frequencyForNote(note)
-        generateTone(frequency: frequency, duration: 0.5)
+        generatePianoTone(frequency: frequency, duration: 1.0)
+    }
+
+    /// Bundle URL for a sampled piano note (files named like C4.mp3, Cs4.mp3)
+    static func pianoSampleURL(midi: Int) -> URL? {
+        let names = ["C", "Cs", "D", "Ds", "E", "F", "Fs", "G", "Gs", "A", "As", "B"]
+        let name = names[((midi % 12) + 12) % 12] + "\(midi / 12 - 1)"
+        return Bundle.main.url(forResource: name, withExtension: "mp3", subdirectory: "PianoNotes")
+            ?? Bundle.main.url(forResource: name, withExtension: "mp3")
+    }
+
+    private func midiNumber(for note: MusicNote) -> Int {
+        var midi = (note.octave + 1) * 12 + note.name.semitonesFromC
+        switch note.accidental {
+        case .sharp: midi += 1
+        case .flat: midi -= 1
+        case .natural: break
+        }
+        return midi
     }
 
     // MARK: - Metronome Playback
@@ -179,6 +207,103 @@ class AudioManager: ObservableObject {
             player.play()
         } catch {
             print("Failed to play tone: \(error)")
+        }
+    }
+
+    /// Generate a piano-like tone with harmonics and ADSR envelope
+    private func generatePianoTone(frequency: Double, duration: Double) {
+        let sampleRate = 44100.0
+        let samples = Int(sampleRate * duration)
+
+        // Harmonic amplitudes (piano-like spectrum)
+        let harmonics: [(multiplier: Double, amplitude: Double)] = [
+            (1.0, 0.5),    // Fundamental
+            (2.0, 0.25),   // 2nd harmonic
+            (3.0, 0.125),  // 3rd harmonic
+            (4.0, 0.0625), // 4th harmonic
+            (5.0, 0.03),   // 5th harmonic
+        ]
+
+        var waveform = [Float](repeating: 0, count: samples)
+
+        for i in 0..<samples {
+            let time = Double(i) / sampleRate
+
+            // ADSR envelope for piano-like sound
+            let attackTime = 0.01
+            let decayTime = 0.1
+            let sustainLevel = 0.7
+            let releaseStart = duration - 0.3
+
+            let envelope: Double
+            if time < attackTime {
+                // Attack
+                envelope = time / attackTime
+            } else if time < attackTime + decayTime {
+                // Decay
+                let decayProgress = (time - attackTime) / decayTime
+                envelope = 1.0 - (1.0 - sustainLevel) * decayProgress
+            } else if time < releaseStart {
+                // Sustain with slight decay
+                let sustainProgress = (time - attackTime - decayTime) / (releaseStart - attackTime - decayTime)
+                envelope = sustainLevel * (1.0 - 0.3 * sustainProgress)
+            } else {
+                // Release
+                let releaseProgress = (time - releaseStart) / (duration - releaseStart)
+                envelope = sustainLevel * 0.7 * (1.0 - releaseProgress)
+            }
+
+            // Sum harmonics
+            var sample = 0.0
+            for harmonic in harmonics {
+                let harmonicFreq = frequency * harmonic.multiplier
+                // Skip harmonics above Nyquist frequency
+                if harmonicFreq < sampleRate / 2 {
+                    sample += sin(2.0 * .pi * harmonicFreq * time) * harmonic.amplitude
+                }
+            }
+
+            waveform[i] = Float(sample * envelope * 0.4)
+        }
+
+        // Create audio buffer
+        let audioFormat = AVAudioFormat(
+            commonFormat: .pcmFormatFloat32,
+            sampleRate: sampleRate,
+            channels: 1,
+            interleaved: false
+        )!
+
+        guard let buffer = AVAudioPCMBuffer(
+            pcmFormat: audioFormat,
+            frameCapacity: AVAudioFrameCount(samples)
+        ) else { return }
+
+        buffer.frameLength = buffer.frameCapacity
+
+        if let channelData = buffer.floatChannelData?[0] {
+            for i in 0..<samples {
+                channelData[i] = waveform[i]
+            }
+        }
+
+        // Play the buffer
+        do {
+            let engine = AVAudioEngine()
+            let player = AVAudioPlayerNode()
+
+            engine.attach(player)
+            engine.connect(player, to: engine.mainMixerNode, format: audioFormat)
+
+            try engine.start()
+            player.scheduleBuffer(buffer, at: nil, options: []) {
+                DispatchQueue.main.async {
+                    engine.stop()
+                }
+            }
+            player.play()
+        } catch {
+            print("Failed to play piano tone: \(error)")
         }
     }
 

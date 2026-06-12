@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import TikimUI
 
 @main
 struct jishoApp: App {
@@ -21,6 +20,7 @@ struct jishoApp: App {
                 .preferredColorScheme(.light)
                 .onAppear {
                     themeManager.theme = AppTheme.ghibli
+                    AdsManager.start()
                 }
                 .withTheming()
                 .withLanguage()

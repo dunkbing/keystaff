@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import TikimUI
 
 struct ContentView: View {
     @EnvironmentObject var themeManager: ThemeManager
@@ -34,13 +33,20 @@ struct ContentView: View {
                 .tag(1)
 
                 NavigationView {
+                    VocalTrainingView()
+                        .onAppear { showTabBar = true }
+                }
+                .navigationViewStyle(StackNavigationViewStyle())
+                .tag(2)
+
+                NavigationView {
                     MetronomeView()
                         .onAppear {
                             showTabBar = true
                         }
                 }
                 .navigationViewStyle(StackNavigationViewStyle())
-                .tag(2)
+                .tag(3)
 
                 NavigationView {
                     SettingsTabView()
@@ -48,7 +54,7 @@ struct ContentView: View {
                         .navigationBarTitleDisplayMode(.inline)
                 }
                 .navigationViewStyle(StackNavigationViewStyle())
-                .tag(3)
+                .tag(4)
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .edgesIgnoringSafeArea(.bottom)
@@ -60,6 +66,7 @@ struct ContentView: View {
                     items: [
                         (icon: "music.note.list", title: "Practice"),
                         (icon: "ear.fill", title: "Ear Training"),
+                        (icon: "mic.fill", title: "Vocal"),
                         (icon: "metronome", title: "Metronome"),
                         (icon: "gear", title: "Settings"),
                     ]

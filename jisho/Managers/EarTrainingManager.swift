@@ -20,6 +20,10 @@ class EarTrainingManager: ObservableObject {
     @Published var isGameActive: Bool = false
     @Published var showFeedback: Bool = false
     @Published var lastAnswerCorrect: Bool = false
+    /// Set while feedback for a wrong answer is shown, so the answer grid can
+    /// highlight the correct option and the user's wrong pick
+    @Published var revealedAnswer: String?
+    @Published var wrongSelection: String?
     @Published var lastSessionResult: EarTrainingResult?
     @Published var isPlayingAudio: Bool = false
 
@@ -347,15 +351,20 @@ class EarTrainingManager: ObservableObject {
             feedbackGenerator.notificationOccurred(.success)
         } else {
             lastAnswerCorrect = false
+            revealedAnswer = question.correctAnswer
+            wrongSelection = answer
             feedbackGenerator.notificationOccurred(.error)
         }
 
         feedbackGenerator.prepare()
 
-        // Show feedback briefly
+        // Show feedback briefly; keep wrong answers up longer so the
+        // highlighted correct answer can be seen
         showFeedback = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + (isCorrect ? 0.3 : 1.2)) {
             self.showFeedback = false
+            self.revealedAnswer = nil
+            self.wrongSelection = nil
             self.generateNewQuestion()
         }
     }

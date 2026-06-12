@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import TikimUI
 
 struct EarTrainingView: View {
     @StateObject private var gameManager = EarTrainingManager()
@@ -50,7 +49,6 @@ struct EarTrainingView: View {
                         Spacer()
                     }
                     .padding(.horizontal)
-                    .padding(.top, 10)
                 }
 
                 if gameManager.isGameActive {
@@ -89,7 +87,7 @@ struct EarTrainingView: View {
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.top, 16)
+                    .padding(.top, 4)
                 }
 
                 // Stats row with enhanced cards
@@ -99,10 +97,10 @@ struct EarTrainingView: View {
                     EnhancedStatView(title: "Accuracy", value: gameManager.accuracy, icon: "target")
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.top, 8)
 
                 Spacer()
-                    .frame(minHeight: 16, maxHeight: 32)
+                    .frame(minHeight: 8, maxHeight: 16)
 
                 // Audio visualization area
                 if gameManager.isGameActive {
@@ -120,13 +118,15 @@ struct EarTrainingView: View {
                 }
 
                 Spacer()
-                    .frame(minHeight: 16, maxHeight: 32)
+                    .frame(minHeight: 8, maxHeight: 16)
 
                 // Answer options
                 if gameManager.isGameActive, let question = gameManager.currentQuestion {
                     EarTrainingAnswerView(
                         options: question.answerOptions,
-                        isEnabled: !gameManager.showFeedback && !gameManager.isPlayingAudio
+                        isEnabled: !gameManager.showFeedback && !gameManager.isPlayingAudio,
+                        correctAnswer: gameManager.revealedAnswer,
+                        wrongSelection: gameManager.wrongSelection
                     ) { answer in
                         gameManager.checkAnswer(answer)
                     }
@@ -300,7 +300,25 @@ struct AudioWaveformView: View {
 struct EarTrainingAnswerView: View {
     let options: [String]
     let isEnabled: Bool
+    /// Highlighted in green after a wrong answer
+    var correctAnswer: String?
+    /// The user's wrong pick, highlighted in red
+    var wrongSelection: String?
     let onSelect: (String) -> Void
+
+    private func background(for option: String) -> AnyShapeStyle {
+        if option == correctAnswer {
+            return AnyShapeStyle(Color.appGreen)
+        }
+        if option == wrongSelection {
+            return AnyShapeStyle(Color.appRed)
+        }
+        return AnyShapeStyle(optionGradient)
+    }
+
+    private func isHighlighted(_ option: String) -> Bool {
+        option == correctAnswer || option == wrongSelection
+    }
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -328,15 +346,15 @@ struct EarTrainingAnswerView: View {
                 } label: {
                     Text(option)
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white.opacity(isEnabled ? 1 : 0.7))
+                        .foregroundColor(.white.opacity(isEnabled || isHighlighted(option) ? 1 : 0.7))
                         .lineLimit(2)
                         .minimumScaleFactor(0.7)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 20)
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(optionGradient)
-                                .opacity(isEnabled ? 1 : 0.4)
+                                .fill(background(for: option))
+                                .opacity(isEnabled || isHighlighted(option) ? 1 : 0.4)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
@@ -368,8 +386,7 @@ struct EarTrainingSummaryOverlay: View {
             Color.appBackground
                 .ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 20) {
+            VStack(spacing: 16) {
                     if let summary = displayedResult {
                         Text("Session Summary")
                             .font(.title2)
@@ -425,7 +442,7 @@ struct EarTrainingSummaryOverlay: View {
                                 .foregroundColor(Color.appSubtitle)
 
                             EarTrainingChartView(results: recentHistory)
-                                .frame(height: 140)
+                                .frame(minHeight: 80, maxHeight: 140)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
                                 .background(
@@ -505,11 +522,10 @@ struct EarTrainingSummaryOverlay: View {
                                 )
                         }
                     }
-                }
-                .padding(.horizontal, 32)
-                .padding(.top, 80)
-                .padding(.bottom, 32)
             }
+            .padding(.horizontal, 32)
+            .padding(.top, 16)
+            .padding(.bottom, 110)
         }
     }
 

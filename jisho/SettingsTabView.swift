@@ -6,11 +6,41 @@
 //
 
 import SwiftUI
-import TikimUI
+
+/// Marketing version + build number read from the bundle, e.g. "1.5.1 (2)"
+var appVersionString: String {
+    let version =
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+    let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
+    return "\(version) (\(build))"
+}
+
+let appStoreShareURL = URL(string: "https://apps.apple.com/app/id6753950371")!
 
 struct SettingsTabView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @State private var showingAbout = false
+
+    private func shareApp() {
+        let activityVC = UIActivityViewController(
+            activityItems: [appStoreShareURL], applicationActivities: nil)
+
+        guard
+            let scene = UIApplication.shared.connectedScenes
+                .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+            let root = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController
+        else { return }
+
+        var top = root
+        while let presented = top.presentedViewController {
+            top = presented
+        }
+        // Anchor for the iPad popover
+        activityVC.popoverPresentationController?.sourceView = top.view
+        activityVC.popoverPresentationController?.sourceRect = CGRect(
+            x: top.view.bounds.midX, y: top.view.bounds.midY, width: 0, height: 0)
+        top.present(activityVC, animated: true)
+    }
 
     var body: some View {
         ScrollView {
@@ -114,12 +144,37 @@ struct SettingsTabView: View {
 
                             Spacer()
 
-                            Text("1.0.0")
+                            Text(appVersionString)
                                 .font(.system(size: 17))
                                 .foregroundColor(Color.appSubtitle)
                         }
                         .padding(.horizontal, 20)
                         .padding(.vertical, 16)
+
+                        Divider()
+                            .padding(.leading, 56)
+
+                        Button(action: shareApp) {
+                            HStack(spacing: 16) {
+                                Image(systemName: "square.and.arrow.up")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(Color(red: 0.91, green: 0.55, blue: 0.56))
+                                    .frame(width: 36)
+
+                                Text("Share KeyStaff")
+                                    .font(.system(size: 17, weight: .medium))
+                                    .foregroundColor(Color.appAccent)
+
+                                Spacer()
+
+                                Image(systemName: "arrow.up.right")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(Color.appAccent)
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
+                        }
+                        .buttonStyle(PlainButtonStyle())
 
                         Divider()
                             .padding(.leading, 56)
@@ -298,7 +353,7 @@ struct AboutView: View {
                     .fontWeight(.bold)
                     .foregroundColor(Color.appText)
 
-                Text("Version 1.0.0")
+                Text("Version \(appVersionString)")
                     .foregroundColor(Color.appSubtitle)
 
                 Divider()

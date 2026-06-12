@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import TikimUI
 
 struct EarTrainingOptionsView: View {
     @Environment(\.presentationMode) var presentationMode

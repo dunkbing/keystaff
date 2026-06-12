@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import TikimUI
 
 struct LearnView: View {
     var body: some View {

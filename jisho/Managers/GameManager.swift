@@ -24,6 +24,12 @@ class GameManager: ObservableObject {
     @Published var currentMode: InputMode = .musicNotes
     @Published var currentChordNotes: [MusicNote] = []
     @Published var chordAnswerOptions: [String] = []
+    /// Set while feedback for a wrong answer is shown, so views can highlight
+    /// the correct answer and the user's wrong pick
+    @Published var revealedNote: (name: NoteName, accidental: Accidental)?
+    @Published var wrongNoteSelection: (name: NoteName, accidental: Accidental)?
+    @Published var revealedChordAnswer: String?
+    @Published var wrongChordSelection: String?
 
     private var timer: Timer?
     private let settings: GameSettings
@@ -434,6 +440,8 @@ class GameManager: ObservableObject {
             }
         } else {
             lastAnswerCorrect = false
+            revealedNote = (currentNote.name, currentNote.accidental)
+            wrongNoteSelection = (answer, accidental)
 
             if settings.hapticFeedbackEnabled {
                 feedbackGenerator.notificationOccurred(.error)
@@ -441,10 +449,13 @@ class GameManager: ObservableObject {
             }
         }
 
-        // Show feedback briefly
+        // Show feedback briefly; keep wrong answers up longer so the
+        // highlighted correct answer can be seen
         showFeedback = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + (isCorrect ? 0.3 : 1.2)) {
             self.showFeedback = false
+            self.revealedNote = nil
+            self.wrongNoteSelection = nil
             self.prepareNextQuestion()
         }
     }
@@ -466,6 +477,8 @@ class GameManager: ObservableObject {
             }
         } else {
             lastAnswerCorrect = false
+            revealedChordAnswer = correctAnswer
+            wrongChordSelection = option
 
             if settings.hapticFeedbackEnabled {
                 feedbackGenerator.notificationOccurred(.error)
@@ -474,8 +487,10 @@ class GameManager: ObservableObject {
         }
 
         showFeedback = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + (lastAnswerCorrect ? 0.3 : 1.2)) {
             self.showFeedback = false
+            self.revealedChordAnswer = nil
+            self.wrongChordSelection = nil
             self.prepareNextQuestion()
         }
     }

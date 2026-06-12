@@ -7,14 +7,18 @@
 
 import SwiftUI
 import UIKit
-import TikimUI
 import ActivityKit
 
 class MetronomeManager: ObservableObject {
     @Published var isPlaying: Bool = false
-    @Published var tempo: Double = 120
+    @Published var tempo: Double = 120 {
+        didSet { UserDefaults.standard.set(tempo, forKey: "metronome_tempo") }
+    }
     @Published var timeSignature: TimeSignature = .fourFour {
-        didSet { updateBeatCycle() }
+        didSet {
+            updateBeatCycle()
+            UserDefaults.standard.set(timeSignature.rawValue, forKey: "metronome_time_signature")
+        }
     }
     @Published var currentBeat: Int = 0
 
@@ -30,6 +34,17 @@ class MetronomeManager: ObservableObject {
     private var currentActivity: Any?
 
     init() {
+        // Restore the last used tempo and time signature
+        let savedTempo = UserDefaults.standard.double(forKey: "metronome_tempo")
+        if (40...240).contains(savedTempo) {
+            tempo = savedTempo
+        }
+        if let rawSignature = UserDefaults.standard.string(forKey: "metronome_time_signature"),
+            let savedSignature = TimeSignature(rawValue: rawSignature)
+        {
+            timeSignature = savedSignature
+        }
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleRemotePlay),

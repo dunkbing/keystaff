@@ -114,3 +114,37 @@
 "Major 7th" = "Major 7th";
 "Octave" = "Octave";
 "Sharp and Flat Notes" = "Sharp and Flat Notes";
+
+// Vocal Training
+"Vocal" = "Vocal";
+"Vocal Range" = "Vocal Range";
+"Vocal Range Test" = "Vocal Range Test";
+"Daily Goal" = "Daily Goal";
+"%lld / %lld exercises today" = "%lld / %lld exercises today";
+"Breathing" = "Breathing";
+"Tone" = "Tone";
+"Range" = "Range";
+"Agility" = "Agility";
+"Scales" = "Scales";
+"Goal" = "Goal";
+"Instructions" = "Instructions";
+"Start" = "Start";
+"Done" = "Done";
+"Paused" = "Paused";
+"Resume" = "Resume";
+"Get ready to sing" = "Get ready to sing";
+"Pitch Accuracy" = "Pitch Accuracy";
+"Great pitch control!" = "Great pitch control!";
+"Getting there — keep practicing!" = "Getting there — keep practicing!";
+"You are quite off-pitch." = "You are quite off-pitch.";
+"Wired Headphones Recommended" = "Wired Headphones Recommended";
+"Microphone Access Needed" = "Microphone Access Needed";
+"Allow microphone access in Settings so we can hear your singing." = "Allow microphone access in Settings so we can hear your singing.";
+"Open Settings" = "Open Settings";
+"Sing \"Ah\" on your lowest note, then your highest, holding each for a moment." = "Sing \"Ah\" on your lowest note, then your highest, holding each for a moment.";
+"Allow microphone access in Settings to test your range." = "Allow microphone access in Settings to test your range.";
+"Lowest" = "Lowest";
+"Highest" = "Highest";
+"Suggested: %@" = "Suggested: %@";
+"Use This Range" = "Use This Range";
+"Share KeyStaff" = "Share KeyStaff";

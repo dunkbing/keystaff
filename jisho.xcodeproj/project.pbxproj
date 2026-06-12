@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C34A22D02E896BF700CB9A2F /* TikimUI in Frameworks */ = {isa = PBXBuildFile; productRef = C34A22CF2E896BF700CB9A2F /* TikimUI */; };
+		C35DE8832FDBFBA40042F2BA /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = C35DE8822FDBFBA40042F2BA /* GoogleMobileAds */; };
 		C3A4F82B2EB0E5200072AB93 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3A4F82A2EB0E5200072AB93 /* WidgetKit.framework */; };
 		C3A4F82D2EB0E5200072AB93 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3A4F82C2EB0E5200072AB93 /* SwiftUI.framework */; };
 /* End PBXBuildFile section */
@@ -82,7 +82,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C34A22D02E896BF700CB9A2F /* TikimUI in Frameworks */,
+				C35DE8832FDBFBA40042F2BA /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,7 +147,7 @@
 			);
 			name = jisho;
 			packageProductDependencies = (
-				C34A22CF2E896BF700CB9A2F /* TikimUI */,
+				C35DE8822FDBFBA40042F2BA /* GoogleMobileAds */,
 			);
 			productName = jisho;
 			productReference = C34A22BD2E8967F700CB9A2F /* jisho.app */;
@@ -204,7 +204,7 @@
 			mainGroup = C34A22B42E8967F700CB9A2F;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				C34A22CE2E896BF700CB9A2F /* XCLocalSwiftPackageReference "../TikimUI" */,
+				C35DE8812FDBFA8B0042F2BA /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C34A22BE2E8967F700CB9A2F /* Products */;
@@ -377,7 +377,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"jisho/Preview Content\"";
 				DEVELOPMENT_TEAM = 2SY55TFJ22;
 				ENABLE_PREVIEWS = YES;
@@ -385,6 +385,7 @@
 				INFOPLIST_FILE = jisho/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = KeyStaff;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "KeyStaff uses the microphone to listen to your singing during vocal training exercises and score your pitch.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -397,7 +398,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5.0;
+				MARKETING_VERSION = 1.5.1;
 				PRODUCT_BUNDLE_IDENTIFIER = db99.dev.keystaff;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -415,7 +416,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"jisho/Preview Content\"";
 				DEVELOPMENT_TEAM = 2SY55TFJ22;
 				ENABLE_PREVIEWS = YES;
@@ -423,6 +424,7 @@
 				INFOPLIST_FILE = jisho/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = KeyStaff;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "KeyStaff uses the microphone to listen to your singing during vocal training exercises and score your pitch.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -435,7 +437,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5.0;
+				MARKETING_VERSION = 1.5.1;
 				PRODUCT_BUNDLE_IDENTIFIER = db99.dev.keystaff;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -547,17 +549,22 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		C34A22CE2E896BF700CB9A2F /* XCLocalSwiftPackageReference "../TikimUI" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../TikimUI;
+/* Begin XCRemoteSwiftPackageReference section */
+		C35DE8812FDBFA8B0042F2BA /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.5.0;
+			};
 		};
-/* End XCLocalSwiftPackageReference section */
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		C34A22CF2E896BF700CB9A2F /* TikimUI */ = {
+		C35DE8822FDBFBA40042F2BA /* GoogleMobileAds */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = TikimUI;
+			package = C35DE8812FDBFA8B0042F2BA /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

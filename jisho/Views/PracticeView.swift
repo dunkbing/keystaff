@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import TikimUI
 
 struct PracticeView: View {
     @StateObject private var gameManager = GameManager()
@@ -83,7 +82,6 @@ struct PracticeView: View {
                         Spacer()
                     }
                     .padding(.horizontal)
-                    .padding(.top, 10)
                 }
 
                 if gameManager.isGameActive {
@@ -122,7 +120,7 @@ struct PracticeView: View {
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.top, 16)
+                    .padding(.top, 4)
                 }
 
                 // Stats row with enhanced cards
@@ -132,10 +130,10 @@ struct PracticeView: View {
                     EnhancedStatView(title: "Accuracy", value: gameManager.accuracy, icon: "target")
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.top, 8)
 
                 Spacer()
-                    .frame(minHeight: 8, maxHeight: 16)
+                    .frame(minHeight: 4, maxHeight: 10)
 
                 // Staff with note/chord content
                 StaffView(
@@ -218,7 +216,9 @@ struct PracticeView: View {
                     switch gameManager.currentMode {
                     case .musicNotes:
                         MusicNoteButtonsView(
-                            includeAccidentals: settings.includeAccidentals
+                            includeAccidentals: settings.includeAccidentals,
+                            highlightCorrect: gameManager.revealedNote,
+                            highlightWrong: gameManager.wrongNoteSelection
                         ) { note, accidental in
                             if gameManager.isGameActive {
                                 gameManager.checkAnswer(note, accidental: accidental)
@@ -237,7 +237,9 @@ struct PracticeView: View {
                     case .chordIdentification:
                         ChordOptionsView(
                             options: gameManager.chordAnswerOptions,
-                            isEnabled: gameManager.isGameActive && !gameManager.showFeedback
+                            isEnabled: gameManager.isGameActive && !gameManager.showFeedback,
+                            correctAnswer: gameManager.revealedChordAnswer,
+                            wrongSelection: gameManager.wrongChordSelection
                         ) { option in
                             gameManager.checkChordAnswer(option)
                         }
@@ -369,7 +371,25 @@ struct EnhancedStatView: View {
 struct ChordOptionsView: View {
     let options: [String]
     let isEnabled: Bool
+    /// Highlighted in green after a wrong answer
+    var correctAnswer: String?
+    /// The user's wrong pick, highlighted in red
+    var wrongSelection: String?
     let onSelect: (String) -> Void
+
+    private func background(for option: String) -> AnyShapeStyle {
+        if option == correctAnswer {
+            return AnyShapeStyle(Color.appGreen)
+        }
+        if option == wrongSelection {
+            return AnyShapeStyle(Color.appRed)
+        }
+        return AnyShapeStyle(optionGradient)
+    }
+
+    private func isHighlighted(_ option: String) -> Bool {
+        option == correctAnswer || option == wrongSelection
+    }
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -400,15 +420,15 @@ struct ChordOptionsView: View {
                     } label: {
                         Text(option)
                             .font(.system(size: 16, weight: .semibold, design: .rounded))
-                            .foregroundColor(.white.opacity(isEnabled ? 1 : 0.7))
+                            .foregroundColor(.white.opacity(isEnabled || isHighlighted(option) ? 1 : 0.7))
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .fill(optionGradient)
-                                    .opacity(isEnabled ? 1 : 0.4)
+                                    .fill(background(for: option))
+                                    .opacity(isEnabled || isHighlighted(option) ? 1 : 0.4)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16)
@@ -712,8 +732,8 @@ struct SessionSummaryOverlay: View {
                 }
             }
             .padding(.horizontal, 32)
-            .padding(.top, 80)
-            .padding(.bottom, 32)
+            .padding(.top, 16)
+            .padding(.bottom, 110)
         }
     }
 

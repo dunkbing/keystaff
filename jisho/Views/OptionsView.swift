@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import TikimUI
 
 struct OptionsView: View {
     @Environment(\.presentationMode) var presentationMode
